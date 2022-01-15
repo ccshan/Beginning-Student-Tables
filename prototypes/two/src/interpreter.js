@@ -3,7 +3,7 @@ import React from 'react';
 import {makeCircle, makeRectangle, makeEquiTriangle,
         makeBeside, makeAbove, makeOverlay,
         makePlace, emptyScene, makeColor,
-        paint} from './image.js';
+        paint, makeText, makeRotate} from './image.js';
 
 /****************
    Interpreter
@@ -50,6 +50,12 @@ const protoEnv = [
                           value: sqr}},
     {name: 'sqrt', binding: {type: RFUNCT_T,
                              value: sqrt}},
+    {name: 'quotient', binding: {type: RFUNCT_T,
+                                value: quotient}},
+    {name: 'sin', binding: {type: RFUNCT_T,
+                            value: sin}},
+    {name: 'cos', binding: {type: RFUNCT_T,
+                            value: cos}},
     {name: 'car', binding: {type: RFUNCT_T,
                             value: car}},
     {name: 'first', binding: {type: RFUNCT_T,
@@ -116,10 +122,14 @@ const protoEnv = [
                                value: overlayAlign}},
     {name: 'place-image', binding: {type: RFUNCT_T,
                                     value: placeImage}},
+    {name: 'rotate', binding: {type: RFUNCT_T,
+                                value: rotate}},
     {name: 'empty-scene', binding: {type: RFUNCT_T,
                                     value: empty_Scene}},
     {name: 'color', binding: {type: RFUNCT_T,
                               value: color}},
+    {name: 'text', binding: {type: RFUNCT_T,
+                              value: text}},
     // constants
     {name: 'true', binding: {type: RBOOL_T,
                              value: true}},
@@ -540,7 +550,7 @@ function makeDefine (name, binding, env) {
 }
 
 // Program -> [(String or SVG)]
-function unparse_cons(prog) {
+function unparse_cons(prog, scaleImage=false) {
     switch (prog.type) {
         case RNUM_T:
             return [prog.value];
@@ -565,7 +575,7 @@ function unparse_cons(prog) {
         case RAPP_T:
             return ['(', ...unparse_cons(prog.value.funct), ...prog.value.args.map(unparse_cons).reduce((acc, arr) => [...acc, ' ', ...arr], ''), ')'];
         case RIMAGE_T:
-            return [paint(prog.value)];
+            return [paint(prog.value, scaleImage)];
         case RCOLOR_T:
             return ['#<color>'];
         case RSTRUCT_T:
@@ -577,7 +587,7 @@ function unparse_cons(prog) {
 }
 
 // Program -> [(String or SVG)]
-function unparse_list (prog) {
+function unparse_list (prog, scaleImage=false) {
     switch (prog.type) {
         case RNUM_T:
             return [prog.value];
@@ -609,7 +619,7 @@ function unparse_list (prog) {
         case RAPP_T:
             return ['(', ...unparse_list(prog.value.funct), ...prog.value.args.map(unparse_list).reduce((acc, arr) => [...acc, ' ', ...arr], ''), ')'];
         case RIMAGE_T:
-            return [paint(prog.value)];
+            return [paint(prog.value, scaleImage)];
         case RCOLOR_T:
             return ['#<color>'];
         case RSTRUCT_T:
@@ -834,6 +844,37 @@ function sqrt(args) {
     typeCheck(args[0], [RNUM_T]);
 
     return {value: Math.sqrt(args[0].value),
+            type: RNUM_T};
+}
+
+function quotient(args) {
+    if (args.length !== 2) {
+        throw new Error('arity mismatch');
+    }
+    typeCheck(args[0], [RNUM_T]);
+    typeCheck(args[1], [RNUM_T]);
+
+    return {value: (args[0].value % args[1].value),
+            type: RNUM_T};
+}
+
+function sin(args) {
+    if (args.length !== 1) {
+        throw new Error('arity mismatch');
+    }
+    typeCheck(args[0], [RNUM_T]);
+
+    return {value: Math.sin(args[0].value),
+            type: RNUM_T};
+}
+
+function cos(args) {
+    if (args.length !== 1) {
+        throw new Error('arity mismatch');
+    }
+    typeCheck(args[0], [RNUM_T]);
+
+    return {value: Math.cos(args[0].value),
             type: RNUM_T};
 }
 
@@ -1323,6 +1364,22 @@ function placeImage(args) {
 
     return {value, type: RIMAGE_T};
 }
+
+function rotate(args) {
+    if (args.length !== 2) {
+        throw new Error('arity mismatch');
+    }
+    let degree = args[0];
+    let img = args[1];
+
+    typeCheck(degree, [RNUM_T]);
+    typeCheck(img, [RIMAGE_T]);
+
+    let value = makeRotate(degree.value, img.value);
+
+    return {value, type: RIMAGE_T};
+}
+
 function empty_Scene(args) {
     if (args.length < 2) {
         throw new Error('arity mismatch');
@@ -1368,6 +1425,27 @@ function color(args) {
     }
 
     return {value, type: RCOLOR_T};
+}
+
+function text(args) {
+    if (args.length !== 3) {
+        throw new Error('arity mismatch');
+    }
+
+    // text (string)
+    let firstArg = args[0];
+    // size (number)
+    let secondArg = args[1];
+    // color
+    let thirdArg = args[2];
+
+    typeCheck(firstArg, [RSTRING_T]);
+    typeCheck(secondArg, [RNUM_T]);
+    typeCheck(thirdArg, [RSTRING_T, RSYM_T, RCOLOR_T]);
+
+    let value = makeText(firstArg.value, secondArg.value, thirdArg.value);
+
+    return {value, type: RIMAGE_T};
 }
 
 export {interp, parseCheck, initEnv, parsePrefix, interpPrefix,

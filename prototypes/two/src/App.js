@@ -4,20 +4,18 @@ import ReactTable from 'react-table';
 import 'react-table/react-table.css';
 import TimeAgo from 'react-timeago';
 import {Link} from 'react-router-dom';
-import {interp, parseCheck, parsePrefix, interpPrefix, unparse_cons, unparse_list, initEnv, isRAPP, RFUNCT_T, isRLIST, isRIMAGE, isRBOOL, isRSTRUCT} from './interpreter.js';
+import {interp, parseCheck, parsePrefix, interpPrefix, unparse_cons, unparse_list, initEnv, isRAPP, RFUNCT_T, isRLIST, isRIMAGE, isRBOOL, isRSTRUCT, RIMAGE_T} from './interpreter.js';
 import {gray, pink, yellow, allBools, isBooleanFormula} from './header.js';
 import {paint, width, height, makeRectangle, makeOverlay} from './image.js';
 import toBSL from './prettyprint.js';
 import {sessionURL, Sendifier} from './sendifier.js';
 import Octicon, {Trashcan, Alert, Check} from '@primer/octicons-react';
 import './App.css';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 
 /*****************************
   Universal Constants I Want
 *****************************/
-// value to indicate a dry run, i.e. don't actually change the underlying structure, just say
-// if the given value exists or not
-const dryRun = {yo: 'don\'t actually change anything'};
 // this one's different because it has a $ at the end so it tests
 // the string until the end
 const nameRE = /^(?!-?(?:\d+(?:\.\d*)?|\.\d+)(?=$|[\s",'`()[\]{}|;#]))[^\s",'`()[\]{}|;#]+$/;
@@ -139,8 +137,15 @@ function deepEquals(proga, progb) {
 
             // draw the image onto the canvas
             ctx.drawImage(img, 0, 0);
-
-            return ctx.getImageData(0, 0, width(image), height(image)).data;
+            
+            // Temporary(?) fix to crash when either want or output image width is 0:
+            // Error Message: IndexSizeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D':
+            //                the source width is 0
+            if (width(image) || height(image) === 0) {
+                return ctx.getImageData(0, 0, 1, 1).data;
+            } else {
+                return ctx.getImageData(0, 0, width(image), height(image)).data;
+            }
         }
 
         let imgA = proga.value;
@@ -378,7 +383,7 @@ function Succinct(props) {
         return noNull && paramTypes.length === modTab.params.length && outType.length === 1;
     }
 
-    const reals = props.tables.map((table) => (
+    const reals = props.tables.map((table, index) => (
         <div key={table.key} className='flex_horiz table'>
           <div className='flex_vert no_grow'>
             <div className='flex_horiz no_grow signature'>
@@ -432,6 +437,8 @@ function Succinct(props) {
               table={table}
               tableNames={props.tables.map((table) => table.name)}
               tableChange={(newTab) => tableChange(newTab, table)}
+              handleOnDrag={props.handleOnDrag}
+              tableIndex={index}
             />
           </div>
           <div className='grow'>{/* div to prevent text fields from stretching across the screen */}</div>
@@ -514,6 +521,7 @@ function Succinct(props) {
 }
 
 function SuccinctTab(props) {
+    
     function paramsExamplesChange(params, examples) {
         props.tableChange({...props.table, params, examples});
     }
@@ -535,7 +543,6 @@ function SuccinctTab(props) {
             examples={props.table.examples}
             tableNames={props.tableNames}
             paramsExamplesChange={paramsExamplesChange}
-
             formulas={props.table.formulas}
             formulasChange={formulasChange}
           />
@@ -547,6 +554,8 @@ function SuccinctTab(props) {
             paramNames={props.table.params.map((param) => param.name)}
             examplesFormulasChange={examplesFormulasChange}
             formulasChange={formulasChange}
+            handleOnDrag={props.handleOnDrag}
+            tableIndex={props.tableIndex}
           />
         </table>
     );
@@ -948,12 +957,9 @@ function SuccinctBody(props) {
         props.examplesFormulasChange(aliveExamples, alteredForms);
     }
 
+    // split into function that makes a new and function that handles not exist exist case
     function exampleChange(newExample, oldExample) {
         const exists = props.examples.indexOf(oldExample) !== -1;
-
-        if (newExample === dryRun) {
-            return exists;
-        }
 
         // Formula -> Formula
         // adds an init output to the given formula and all of its children (if it has any) so stuff works
@@ -984,43 +990,64 @@ function SuccinctBody(props) {
         return true; // this doesn't actually do anything
     }
 
+    // handleOnRowDrag : DragObject -> 
+    // passes an updated Example order to handleOnDrag
+    function handleOnRowDrag(result) {
+        if(!result.destination) {
+            return;
+        }
+        // handle out of bounds here for dummys
+        const sourceIndex = result.source.index;
+        const destinationIndex = result.destination.index;
+        const examplesList = Array.from(props.examples);
+        const [reorderedExample] = examplesList.splice(sourceIndex, 1);
+        examplesList.splice(destinationIndex, 0, reorderedExample);
+
+        props.handleOnDrag(examplesList, props.tableIndex);
+    }
+
     const reals = props.examples.map((example, i) => (
-          <tr key={example.key}>
-            <td>
-              <RemButton
-                onClick={props.disabled ? undefined : (() => remExample(example))}
-                title={'Remove this example'}
-              />
-            </td>
-            <Inputs
-              disabled={props.disabled}
-              globalEnv={props.globalEnv}
-              dummy={false}
-              inputs={example.inputs}
-              inputsChange={(inputs) => exampleChange({...example, inputs},
-                                                      example)}
-            />
-            <td>{/* empty cell to align with param dummy input */}</td>
-            <Outputs
-              globalEnv={props.globalEnv}
-              dummy={false}
-              formulas={props.formulas}
-              want={example.want}
-              row={i}
-            />
-            <td>{/* empty cell to align with top level formula dummy input */}</td>
-            <Want
-              disabled={props.disabled}
-              globalEnv={props.globalEnv}
-              dummy={false}
-              want={example.want}
-              wantChange={(want) => exampleChange({...example, want},
-                                                  example)}
-            />
-          </tr>
+        <Draggable key={example.key} index={i} draggableId={example.key.toString()}>
+            {(provided) => (
+                <tr ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                    <td>
+                    <RemButton
+                        onClick={props.disabled ? undefined : (() => remExample(example))}
+                        title={'Remove this example'}
+                    />
+                    </td>
+                    <Inputs
+                        disabled={props.disabled}
+                        globalEnv={props.globalEnv}
+                        dummy={false}
+                        inputs={example.inputs}
+                        inputsChange={(inputs) => exampleChange({...example, inputs},
+                                                            example)}
+                    />
+                    <td>{/* empty cell to align with param dummy input */}</td>
+                    <Outputs
+                        globalEnv={props.globalEnv}
+                        dummy={false}
+                        formulas={props.formulas}
+                        want={example.want}
+                        row={i}
+                    />
+                    <td>{/* empty cell to align with top level formula dummy input */}</td>
+                    <Want
+                        disabled={props.disabled}
+                        globalEnv={props.globalEnv}
+                        dummy={false}
+                        want={example.want}
+                        wantChange={(want) => exampleChange({...example, want},
+                                                            example)}
+                    />
+                </tr>
+            )}
+        </Draggable>
     ));
     
     const dummy = (
+        // index = examples.length
           <tr key={peekKey(props.paramNames.length)}>
             <td>{/* empty cell to offset rembutton */}</td>
             <Inputs
@@ -1053,9 +1080,17 @@ function SuccinctBody(props) {
     );
 
     return (
-        <tbody>
-          {[...reals, dummy]}
-        </tbody>
+        <DragDropContext onDragEnd={handleOnRowDrag}>
+            <Droppable droppableId={"droppable-main-table" + props.tableIndex}>
+                {(provided) => (
+                    <tbody ref={provided.innerRef} {...provided.droppableProps}>
+                        {[...reals]}
+                        {provided.placeholder}
+                        {dummy}
+                    </tbody>
+                )}
+            </Droppable>
+        </DragDropContext>
     );
 }
 
@@ -1189,58 +1224,105 @@ function Outputs(props) {
     }
 }
 
-function TestCell(props) {
-    let output = props.output;
-
-    if (output === gray) {
-        return (
-            <td className={'gray'}>
-            </td>
-        );
+class TestCell extends React.Component {
+    /* have unparse(image) be a full size render, maybe by storing full size render in state? */
+    constructor(props) {
+        super(props);
+        this.handleViewClick = this.handleViewClick.bind(this);
+        this.state = {
+            isOpen : false,
+        }
+        let want;
+        try {
+            want = interp(this.props.want, this.props.globalEnv);
+        } catch (e) {
+            want = yellow;
+        }
+        console.log(want);
     }
-
-    if (output === pink) {
-        return (
-            <td className={'pink'}>
-            </td>
-        );
+    // paint could be called with an extra param that specifies what type of render should be returned
+    
+    handleViewClick(prog) {
+        // check if program returns an image
+        if (isRIMAGE(prog)){
+            this.setState(
+                {isOpen : !this.state.isOpen}
+            );
+        }
     }
+    
+    render() {
+        let output = this.props.output;
 
-    if (output.yellow === 'yellow') {
-        return (
-            <td className={'yellow'}>
-            </td>
-        );
-    }
+        if (output === gray) {
+            return (
+                <td className={'gray'}>
+                </td>
+            );
+        }
 
-    if (output instanceof Error) {
-        return <td><ErrorMessage error={output}/></td>
-    }
+        if (output === pink) {
+            return (
+                <td className={'pink'}>
+                </td>
+            );
+        }
 
-    let want;
-    try {
-        want = interp(props.want, props.globalEnv);
-    } catch (e) {
-        want = yellow;
-    }
+        if (output.yellow === 'yellow') {
+            return (
+                <td className={'yellow'}>
+                </td>
+            );
+        }
 
-    if (want.yellow !== 'yellow' && deepEquals(output, want)) {
-        return (
-            <td className='output'>
-              {unparse(output)}
-              <div title={"Yay! It's right!"} className="check">
-                <Octicon
-                  icon={Check} size="small" verticalAlign="middle"
-                  ariaLabel='Yay!'/>
-              </div>
-            </td>
-        )
-    } else {
-        return (
-            <td className='output'>
-              {unparse(output)}
-            </td>
-        );
+        if (output instanceof Error) {
+            return <td><ErrorMessage error={output}/></td>
+        }
+        
+        let want;
+        try {
+            want = interp(this.props.want, this.props.globalEnv);
+        } catch (e) {
+            want = yellow;
+        }
+        
+        // change true and false conds to clickable
+        if (want.yellow !== 'yellow' && deepEquals(output, want)) {
+            return (
+                <td className='output' onClick={() => this.handleViewClick(output)}>
+                    {unparse(output, true)}
+                    <div title={"Yay! It's right!"} className="check">
+                        <Octicon
+                        icon={Check} size="small" verticalAlign="middle"
+                        ariaLabel='Yay!'/>
+                    </div>
+                    {this.state.isOpen && (
+                        <dialog
+                            style={{ position: "absolute" }}
+                            open
+                            onClick={() => this.handleViewClick(output)}
+                        >
+                            {unparse(output)}
+                        </dialog>
+                    )}
+                </td>
+            )
+        } else {
+            return (
+                <td className='output' onClick={() => this.handleViewClick(output)}>
+                {this.state.isOpen && (
+                    <dialog
+                        style={{ position: "absolute" }}
+                        open
+                        onClick={() => this.handleViewClick(output)}
+                    >
+                        {unparse(output)}
+                    </dialog>
+                )}
+                {unparse(output, true)}
+                </td>
+            );
+        }
     }
 }
 
@@ -1260,8 +1342,16 @@ function DummyCell (props) {
     }
 }
 
-function Want(props) {
-    function validProg(text) {
+class Want extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            isOpen : false,
+        }
+        this.validProg = this.validProg.bind(this);
+        this.handleViewClick = this.handleViewClick.bind(this);
+    }
+    validProg(text) {
         try {
             parseCheck(text);
         } catch(e) {
@@ -1270,40 +1360,60 @@ function Want(props) {
         return true;
     }
 
-    let valueCell;
-    if (props.dummy || props.want.yellow === 'yellow') {
-        valueCell = <script/>;
-    } else {
-        try {
-            let evalWant = interp(props.want, props.globalEnv);
-            if (deepEquals(evalWant, props.want)) {
-                valueCell = <script/>;
-            } else {
-                valueCell = <td className='output'>{unparse(evalWant)}</td>;
-            }
-        } catch (e) {
-            valueCell = <td><ErrorMessage error={e}/></td>
+    handleViewClick(prog) {
+        // check for return type
+        if (isRIMAGE(prog)) {
+            this.setState(
+                {isOpen : !this.state.isOpen}
+            );
         }
     }
 
-    return (
-        <React.Fragment>
-          <td>
-            <div className='flex_horiz'>
-              <ValidatedArea
-                dummy={props.dummy}
-                placeholder={'Want'}
-                text={props.disabled ? props.dummy ? '' : unparse_to_string(props.want)
-                                     : undefined}
-                isValid={validProg}
-                onValid={(text) => props.wantChange(parseCheck(text))}
-                onEmpty={() => props.wantChange(yellow)}
-              />
-            </div>
-          </td>
-          {valueCell}
-        </React.Fragment>
-    );
+    render() {
+        let valueCell;
+        if (this.props.dummy || this.props.want.yellow === 'yellow') {
+            valueCell = <script/>;
+        } else {
+            try {
+                let evalWant = interp(this.props.want, this.props.globalEnv);
+                if (deepEquals(evalWant, this.props.want)) {
+                    valueCell = <script/>;
+                } else {
+                    valueCell = <td className='output' onClick={() => this.handleViewClick(evalWant)}>{this.state.isOpen && (
+                        <dialog
+                            className="dialog"
+                            style={{ position: "absolute" }}
+                            open
+                            onClick={() => this.handleViewClick(evalWant)}
+                        >
+                            {unparse(evalWant)}
+                        </dialog>)}
+                        {unparse(evalWant, true)}
+                        </td>
+                }
+            } catch (e) {
+                valueCell = <td><ErrorMessage error={e}/></td>
+            }
+        }
+        return(
+            <React.Fragment>
+                <td>
+                    <div className='flex_horiz'>
+                    <ValidatedArea
+                        dummy={this.props.dummy}
+                        placeholder={'Want'}
+                        text={this.props.disabled ? this.props.dummy ? '' : unparse_to_string(this.props.want)
+                                            : undefined}
+                        isValid={this.validProg}
+                        onValid={(text) => this.props.wantChange(parseCheck(text))}
+                        onEmpty={() => this.props.wantChange(yellow)}
+                    />
+                    </div>
+                </td>
+                {valueCell}
+            </React.Fragment>
+        );
+    }
 }
 
 class DefinitionsArea extends React.Component {
@@ -1437,6 +1547,7 @@ class App extends React.Component {
         this.programChange = this.programChange.bind(this);
         this.playbackTimeChange = this.playbackTimeChange.bind(this);
         this.render = this.render.bind(this);
+        this.handleOnDrag = this.handleOnDrag.bind(this);
 
         // The following line mitigates the problem that sometimes toRGBAArray returns
         // all-zeros.  Probably it doesn't completely fix #12.
@@ -1649,6 +1760,19 @@ class App extends React.Component {
         });
     }
 
+    // handleOnDrag : Example Number -> Table
+    // assings the Table with the new Example and updates the state of tables
+    handleOnDrag(newExampleOrder, tableIndex) {
+       const currentTables = Array.from(this.state.tables);
+       const tableToChange = currentTables[tableIndex];
+       const changedTable = {...tableToChange, examples:newExampleOrder};
+       currentTables[tableIndex] = changedTable;
+       
+       this.setState({
+           tables: this.calculate(this.state.globalEnv, currentTables)
+       });
+    }
+
     playbackTimeChange(event) {
         const snapshots = this.props.snapshots;
         if (snapshots) {
@@ -1690,6 +1814,7 @@ class App extends React.Component {
                 globalEnv={this.state.globalEnv}
                 tables={this.state.tables}
                 programChange={this.programChange}
+                handleOnDrag={this.handleOnDrag}
               />
               <div className='language_select'>
                 <select
