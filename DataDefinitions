@@ -128,6 +128,7 @@ An Image is one of
         - Above
         - Overlay
         - Place
+        - Text
 
 A Circle is
         {r:     Integer,
@@ -174,6 +175,12 @@ An Overlay is
         y:     Integer,
         image: Image,
         scene: Image}
+ 
+ A Text is 
+      {t: String,
+       size: Number,
+       color: Color,
+       type: 'text'}
        
 A Color is
         {r: Integer,

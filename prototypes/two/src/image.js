@@ -552,6 +552,15 @@ function getRotatedDimensions(width, height, angle) {
     height = 2 * ydelta;
     return [width, height];
 }
+/*
+function getTextElementDimensions(image) {
+    let bbox = image.getBBox();
+    let width = bbox.width;
+    let height = bbox.height;
+
+    return [width, height];
+}
+*/
 
 // Image -> Integer
 function width (image) {
@@ -576,6 +585,7 @@ function width (image) {
         // TODO: pre-render in hidden component, get calculated widht, height
         return getRotatedDimensions(width(image.img), height(image.img), image.degree)[0];
     case 'text':
+        // return getTextElementDimensions(image)[0];
         return image.t.length * (image.size / 1.5);
     default:
         return new Error (`Unknown Image Type: ${image.type}`);
@@ -607,6 +617,7 @@ function height (image) {
     case 'rotate':
         return getRotatedDimensions(width(image.img), height(image.img), image.degree)[1];// + (height(image.img) / 10);
     case 'text':
+        // return getTextElementDimensions(image)[1];
         return image.size;
     default:
         return new Error (`Unknown Image Type: ${image.type}`);
@@ -615,24 +626,24 @@ function height (image) {
 
 
 // Image, Integer, Integer -> SVG
-function render (image, x, y, scaled=false, scalingSpecs={aWidth: 0, aHeight:0, wRatio:0, hRatio: 0}) {
+function render (image, x, y) {
     switch (image.type) {
     case 'circle':
-        return render_circle(image, x, y, scaled, scalingSpecs);
+        return render_circle(image, x, y);
     case 'rect':
-        return render_rect(image, x, y, scaled, scalingSpecs);
+        return render_rect(image, x, y);
     case 'triangle':
-        return render_triangle(image, x, y); // need to fix formula here
+        return render_triangle(image, x, y);
     case 'polygon':
-        return render_polygon(image, x, y); // rendered by points, need
+        return render_polygon(image, x, y);
     case 'beside':
-        return render_beside(image, x, y, scaled, scalingSpecs);
+        return render_beside(image, x, y);
     case 'above':
-        return render_above(image, x, y, scaled, scalingSpecs);
+        return render_above(image, x, y);
     case 'overlay':
-        return render_overlay(image, x, y, scaled, scalingSpecs);
+        return render_overlay(image, x, y);
     case 'place':
-        return render_place(image, x, y, scaled, scalingSpecs);
+        return render_place(image, x, y);
     case 'rotate':
         return render_rotate(image, x, y);
     case 'text':
@@ -643,21 +654,13 @@ function render (image, x, y, scaled=false, scalingSpecs={aWidth: 0, aHeight:0, 
 }
 
 // Circle, Integer, Integer -> SVG
-function render_circle (image, x, y, scaled, scalingSpecs) {
+function render_circle (image, x, y) {
     let red = image.color.r;
     let green = image.color.g;
     let blue = image.color.b;
     // for some reason alpha is the only float in rgba in css...
     let alpha = image.color.a / 255;
-
-    // let radius = image.r;
-    // adjusted radius value:
-    let radius;
-    if (scalingSpecs.aWidth !== 0 && scaled) {
-        radius = getAdjustHeightWidth(image, scalingSpecs.aWidth, scalingSpecs.aHeight, scalingSpecs.wRatio, scalingSpecs.hRatio)[1];
-    } else {
-        radius = scaled ? (getAdjustHeightWidth(image)[0] / 2) : image.r; // div by 2 since func returns diameter
-    }
+    let radius = image.r;
 
     switch (image.mode) {
     case 'solid':
@@ -686,27 +689,13 @@ function render_circle (image, x, y, scaled, scalingSpecs) {
 }
 
 // Rectangle, Integer, Integer -> SVG
-function render_rect (image, x, y, scaled, scalingSpecs) {
+function render_rect (image, x, y) {
     let red = image.color.r;
     let green = image.color.g;
     let blue = image.color.b;
     let alpha = image.color.a / 255;
-
-    // original values:
-    // let width = image.width;
-    // let height = image.height;
-
-    // scaled width and heights:
-    let w, h
-    // checks if dimensions should be scaled to something other than default values (used for list_renderer to keep images relative size)
-    if (scalingSpecs.aWidth !== 0 && scaled) {
-        let dimensions = getAdjustHeightWidth(image, scalingSpecs.aWidth, scalingSpecs.aHeight, scalingSpecs.wRatio, scalingSpecs.hRatio);
-        w = dimensions[0];
-        h = dimensions[1];
-    } else {
-        w = scaled ? getAdjustHeightWidth(image)[0] : image.width;
-        h = scaled ? getAdjustHeightWidth(image)[1] : image.height;
-    }
+    let w = image.width;
+    let h = image.height;
 
     switch (image.mode) {
     case 'solid':
@@ -737,16 +726,13 @@ function render_triangle (image, x, y) {
     let green = image.color.g;
     let blue = image.color.b;
     let alpha = image.color.a / 255;
-
-    // let height, width = height(image), width(image);
-    let width = getAdjustHeightWidth(image)[0];
-    let height = getAdjustHeightWidth(image)[1];
-
-    let D = Math.round(Math.sqrt(Math.pow(image.B, 2) - Math.pow(height, 2))); 
+   let w = width(image);
+   let h = height(image);
+   let D = Math.round(Math.sqrt(Math.pow(image.B, 2) - Math.pow(h, 2)));
     // these are coordinates                                   //         b       
-    let a = {x: x, y: y + height};                      //         .       
+    let a = {x: x, y: y + h};                                  //         .       
     let b = {x: x + D, y: y};                                  //        /|\      
-    let c = {x: x + width, y: y + height};       //       / | \     
+    let c = {x: x + w, y: y + h};                              //       / | \     
                                                                //   B  /  |  \  C
                                                                //     /   |h  \
                                                                //    /    |    \
@@ -801,27 +787,30 @@ function render_polygon (image, x, y) {
 // no, not really any point. react seems to figure it out
 
 // (Integer, Integer -> Integer), (Integer, Integer -> Integer), (Integer, Integer -> Integer), (Integer, Integer -> Integer) -> ([Image], Integer, Integer) -> [SVG]
-function make_list_renderer (xCorrect, yCorrect, xChange, yChange, scaled, scalingSpecs, originalWidth, originalHeight) {
-    function render_list (images, x, y, scaleImage) {
+function make_list_renderer (xCorrect, yCorrect, xChange, yChange) {
+    function render_list (images, x, y) {
         if (images.length === 0) {
             throw new Error('I need at least 1 image to render!');
         }
         
         // attempt at scaling relative to base canvas
+        /*
         let wRatio = originalWidth / width(images[0]);
         let hRatio = originalHeight / height(images[0]);
         let adjustedDimensions = getAdjustHeightWidth(images[0], width(images[0]), height(images[0]), wRatio, hRatio);
         let w = scaleImage ? adjustedDimensions[0] : width(images[0]);
         let h = scaleImage ? adjustedDimensions[1] : height(images[0]);
+        */
+        let w = width(images[0]);
+        let h = height(images[0]);
         
-        let first = render(images[0], xCorrect(x, w), yCorrect(y, h), scaled, scalingSpecs);
-        console.log(scalingSpecs);
+        let first = render(images[0], xCorrect(x, w), yCorrect(y, h));
 
         if (images.length === 1) {
             return [first];
         }
 
-        let rest = render_list(images.slice(1), xChange(x, w), yChange(y, h), scaled, scalingSpecs);
+        let rest = render_list(images.slice(1), xChange(x, w), yChange(y, h));
 
         // return list in reverse because the last child of an svg tag is shown on top
         // this matters for overlay, but makes no difference in beside, above
@@ -832,20 +821,8 @@ function make_list_renderer (xCorrect, yCorrect, xChange, yChange, scaled, scali
 }
 
 // Beside, Ingeger, Integer -> [SVG]
-function render_beside (image, x, y, scaled, specs) {
+function render_beside (image, x, y) {
     let imgHeight = height(image);
-    let imgWidth = width(image);
-    let adjustedHeight = getAdjustHeightWidth(image)[1];
-    let adjustedWidth = getAdjustHeightWidth(image)[0];
-    // get ratios
-    let widthRatio = findWidthAndHeightRatios(image, adjustedWidth, adjustedHeight)[0];
-    let heightRatio = findWidthAndHeightRatios(image, adjustedWidth, adjustedHeight)[1];
-
-    let scalingSpecs = {aWidth : adjustedWidth, aHeight: adjustedHeight, wRatio: widthRatio, hRatio: heightRatio};
-    
-    imgHeight = scaled ? getAdjustHeightWidth(image)[1] : height(image);
-    imgWidth = scaled ? getAdjustHeightWidth(image)[0] : width(image);
-    // imgHeight = height(image);
 
     let initY = y,
         yCorrect = (y, h) => y;
@@ -868,29 +845,14 @@ function render_beside (image, x, y, scaled, specs) {
     let renderoozle = make_list_renderer((x, w) => x,
                                          yCorrect,
                                          (x, dx) => x + dx,
-                                         (y, dy) => y,
-                                         scaled,
-                                         scalingSpecs,
-                                         width(image),
-                                         height(image));
+                                         (y, dy) => y);
     return renderoozle(image.images, x, initY);
 }
 
 // Above, Integer, Integer -> [SVG]
-function render_above (image, x, y, scaled) {
-    let imgHeight = height(image);
+function render_above (image, x, y) {
     let imgWidth = width(image);
-    let adjustedHeight = getAdjustHeightWidth(image)[1];
-    let adjustedWidth = getAdjustHeightWidth(image)[0];
-    // get ratios
-    let widthRatio = findWidthAndHeightRatios(image, adjustedWidth, adjustedHeight)[0];
-    let heightRatio = findWidthAndHeightRatios(image, adjustedWidth, adjustedHeight)[1];
-
-    let scalingSpecs = {aWidth : adjustedWidth, aHeight: adjustedHeight, wRatio: widthRatio, hRatio: heightRatio};
-
-    imgWidth = scaled ? getAdjustHeightWidth(image)[0] : width(image);
-    imgHeight = scaled ? getAdjustHeightWidth(image)[1] : height(image);
-
+    
     let initX = x,
         xCorrect = (x, w) => x;
 
@@ -912,29 +874,15 @@ function render_above (image, x, y, scaled) {
     let renderoozle = make_list_renderer(xCorrect,
                                          (y, h) => y,
                                          (x, dx) => x,
-                                         (y, dy) => y + dy,
-                                         scaled,
-                                         scalingSpecs,
-                                         width(image),
-                                         height(image));
+                                         (y, dy) => y + dy);
     return renderoozle(image.images, initX, y);
 
 }
 
 // Overlay, Integer, Integer -> [SVG]
-function render_overlay (image, x, y, scaled) {
+function render_overlay (image, x, y) {
     let imgHeight = height(image);
     let imgWidth = width(image);
-    let adjustedHeight = getAdjustHeightWidth(image)[1];
-    let adjustedWidth = getAdjustHeightWidth(image)[0];
-    // get ratios
-    let widthRatio = findWidthAndHeightRatios(image, adjustedWidth, adjustedHeight)[0];
-    let heightRatio = findWidthAndHeightRatios(image, adjustedWidth, adjustedHeight)[1];
-
-    let scalingSpecs = {aWidth : adjustedWidth, aHeight: adjustedHeight, wRatio: widthRatio, hRatio: heightRatio};
-
-    imgWidth = scaled ? getAdjustHeightWidth(image)[0] : width(image);
-    imgHeight = scaled ? getAdjustHeightWidth(image)[1] : height(image);
 
     let initX = x,
         initY = y,
@@ -974,9 +922,7 @@ function render_overlay (image, x, y, scaled) {
     let renderoozle = make_list_renderer(xCorrect,
                                          yCorrect,
                                          (x, dx) => x,
-                                         (y, dy) => y,
-                                         scaled,
-                                         scalingSpecs);
+                                         (y, dy) => y);
     return renderoozle(image.images, initX, initY);
 }
 
@@ -1018,13 +964,27 @@ function render_text(image, x, y) {
     );
 }
 
+// Image Boolean -> Number
+// returns the value to scale given image down to 250
+function getScaleValue(image, scaled) {
+    let w = width(image);
+    let h = height(image);
+    let scaleValue;
+    if (w <= 250 && h <= 250) {
+        scaleValue = 1;
+    } else if (w > 250 || h > 250) {
+        let larger = w > 250 && h <= 250 ? w : h;
+        scaleValue = 250 / larger;
+    }
+    return (scaled ? scaleValue : 1);
+}
+
 // Image -> top level SVG
 function paint (image, scaled) {
-    let picture = render(image, 0, 0, scaled);
-    let adjusted = getAdjustHeightWidth(image);
-    let w = scaled ? adjusted[0] : width(image);
-    let h = scaled ? adjusted[1] : height(image);
-    // width(image), height(image)
+    let scaleValue = getScaleValue(image, scaled);
+    let picture = render(image, 0, 0);
+    let w = scaled ? width(image) * scaleValue : width(image);
+    let h = scaled ? height(image) * scaleValue : height(image);
     return (
         <svg viewBox={`0 0 ${w} ${h}`}
              xmlns='http://www.w3.org/2000/svg'
@@ -1032,54 +992,11 @@ function paint (image, scaled) {
              height={h}
              key={genKey()}
         >
-          {picture}
+          <g style={{transform: `scale(${scaleValue})`}}>{picture}</g>
         </svg>
     );
 }
 
-// Image (Number) (Number) (Number) (Number) -> [Number, Number]
-// returns the scaled dimensions of given shape, optional paramters can be used to specify what dimensions to scale to
-// * clunky and needs work *
-function getAdjustHeightWidth(image, maxWidth = 200, maxHeight = 200, widthRatio = 0, heightRatio = 0) {
-    // const maxDimension = 200;
-    let maxDimension = maxWidth >= maxHeight ? maxWidth : maxHeight;
-    let originalWidth = width(image);
-    let originalHeight = height(image);
-    let ratio = originalWidth >= originalHeight ? (originalWidth / originalHeight) : (originalHeight / originalWidth);
-    let rWidth, rHeight;
-
-    if (widthRatio > 0 && heightRatio > 0) {
-        console.log('adjusted: ', image, ' new width: ', (maxWidth/widthRatio), ' new height: ', (maxHeight / heightRatio));
-        console.log('max width :', maxWidth);
-        return [(maxWidth / widthRatio), (maxHeight / heightRatio)];
-    }
-    if (originalWidth >= maxDimension || originalHeight >= maxDimension) {
-
-        if (originalWidth >= originalHeight) {
-            rWidth = maxDimension;
-            rHeight = maxDimension / ratio;
-        } else if (originalHeight >= originalWidth) {
-            rHeight = maxDimension;
-            rWidth = maxDimension / ratio;
-        }
-    } else {
-        rWidth = originalWidth;
-        rHeight = originalHeight;
-    }
-    
-    return [rWidth, rHeight];
-}
-
-// Image Number Number -> [Number, Number]
-// finds the ratios of the dimensions of the given image to the supplied values
-function findWidthAndHeightRatios(image, newWidth, newHeight) {
-    let originalWidth = width(image);
-    let originalHeight = height(image);
-
-    let widthRatio = originalWidth / newWidth;
-    let heightRatio = originalHeight / newHeight;
-    return [widthRatio, heightRatio];
-}
 export {makeCircle, makeRectangle, makeEquiTriangle, makeStar, makePentagon, makeHexagon,
         makeBeside, makeAbove, makeOverlay,
         makePlace, emptyScene, makeColor,

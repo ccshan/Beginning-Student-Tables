@@ -1231,14 +1231,8 @@ class TestCell extends React.Component {
         this.handleViewClick = this.handleViewClick.bind(this);
         this.state = {
             isOpen : false,
+            currentOutput : {},
         }
-        let want;
-        try {
-            want = interp(this.props.want, this.props.globalEnv);
-        } catch (e) {
-            want = yellow;
-        }
-        console.log(want);
     }
     // paint could be called with an extra param that specifies what type of render should be returned
     
@@ -1248,6 +1242,15 @@ class TestCell extends React.Component {
             this.setState(
                 {isOpen : !this.state.isOpen}
             );
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.output !== this.state.currentOutput) {
+            this.setState({
+                isOpen: false,
+                currentOutput: prevProps.output
+            });
         }
     }
     
@@ -1313,7 +1316,7 @@ class TestCell extends React.Component {
                 {this.state.isOpen && (
                     <dialog
                         style={{ position: "absolute" }}
-                        open
+                        open                        
                         onClick={() => this.handleViewClick(output)}
                     >
                         {unparse(output)}
@@ -1347,6 +1350,7 @@ class Want extends React.Component {
         super(props);
         this.state = {
             isOpen : false,
+            want : {},
         }
         this.validProg = this.validProg.bind(this);
         this.handleViewClick = this.handleViewClick.bind(this);
@@ -1366,6 +1370,15 @@ class Want extends React.Component {
             this.setState(
                 {isOpen : !this.state.isOpen}
             );
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.want !== this.state.want) {
+            this.setState({
+                isOpen : false,
+                want : prevProps.want
+            });
         }
     }
 
