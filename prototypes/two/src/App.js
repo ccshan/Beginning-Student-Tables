@@ -993,17 +993,22 @@ function SuccinctBody(props) {
     // handleOnRowDrag : DragObject -> 
     // passes an updated Example order to handleOnDrag
     function handleOnRowDrag(result) {
-        if(!result.destination) {
-            return;
-        }
-        // handle out of bounds here for dummys
         const sourceIndex = result.source.index;
         const destinationIndex = result.destination.index;
+        if (!result.destination || sourceIndex === destinationIndex) {
+            return;
+        }
         const examplesList = Array.from(props.examples);
-        const [reorderedExample] = examplesList.splice(sourceIndex, 1);
-        examplesList.splice(destinationIndex, 0, reorderedExample);
-
-        props.handleOnDrag(examplesList, props.tableIndex);
+        if (sourceIndex === examplesList.length || destinationIndex === examplesList.length) {
+            // add a 'yellow' example to the list at destination index
+            let newYellowExample = {inputs: [{prog: yellow, key: takeKey()}], want: yellow, key: takeKey()};
+            examplesList.splice(destinationIndex, 0, newYellowExample);
+            props.handleOnDrag(examplesList, props.tableIndex, true);
+        } else {
+            const [reorderedExample] = examplesList.splice(sourceIndex, 1);
+            examplesList.splice(destinationIndex, 0, reorderedExample);
+            props.handleOnDrag(examplesList, props.tableIndex);
+        }
     }
 
     const reals = props.examples.map((example, i) => (
@@ -1048,35 +1053,39 @@ function SuccinctBody(props) {
     
     const dummy = (
         // index = examples.length
-          <tr key={peekKey(props.paramNames.length)}>
-            <td>{/* empty cell to offset rembutton */}</td>
-            <Inputs
-              disabled={props.disabled}
-              globalEnv={props.globalEnv}
-              dummy={true}
-              inputs={props.paramNames.map((_, i) => ({key: peekKey(i)}))}
-              inputsChange={(inputs) => exampleChange({inputs,
-                                                       want: yellow,
-                                                       key: takeKey()},
-                                                      {})}
-            />
-            <td>{/* empty cell to align with param dummy input */}</td>
-            <Outputs
-              globalEnv={props.globalEnv}
-              dummy={true}
-              formulas={props.formulas}
-            />
-            <td>{/* empty cell to align with top level formula dummy input */}</td>
-            <Want
-              disabled={props.disabled}
-              globalEnv={props.globalEnv}
-              dummy={true}
-              wantChange={(want) => exampleChange({want,
-                                                   inputs: props.paramNames.map((_) => ({prog: yellow, key: takeKey()})),
-                                                   key: takeKey()},
-                                                  {})}
-            />
-          </tr>
+        <Draggable key={peekKey(props.paramNames.length)} index={props.examples.length} draggableId={peekKey().toString()}>
+            {(provided) => (
+                <tr ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                    <td>{/* empty cell to offset rembutton */}</td>
+                        <Inputs
+                        disabled={props.disabled}
+                        globalEnv={props.globalEnv}
+                        dummy={true}
+                        inputs={props.paramNames.map((_, i) => ({key: peekKey(i)}))}
+                        inputsChange={(inputs) => exampleChange({inputs,
+                                                                want: yellow,
+                                                                key: takeKey()},
+                                                                {})}
+                        />
+                    <td>{/* empty cell to align with param dummy input */}</td>
+                        <Outputs
+                        globalEnv={props.globalEnv}
+                        dummy={true}
+                        formulas={props.formulas}
+                        />
+                    <td>{/* empty cell to align with top level formula dummy input */}</td>
+                        <Want
+                        disabled={props.disabled}
+                        globalEnv={props.globalEnv}
+                        dummy={true}
+                        wantChange={(want) => exampleChange({want,
+                                                    inputs: props.paramNames.map((_) => ({prog: yellow, key: takeKey()})),
+                                                    key: takeKey()},
+                                                    {})}
+                        />
+                </tr>
+            )}
+        </Draggable>
     );
 
     return (
@@ -1084,9 +1093,8 @@ function SuccinctBody(props) {
             <Droppable droppableId={"droppable-main-table" + props.tableIndex}>
                 {(provided) => (
                     <tbody ref={provided.innerRef} {...provided.droppableProps}>
-                        {[...reals]}
+                        {[...reals, dummy]}
                         {provided.placeholder}
-                        {dummy}
                     </tbody>
                 )}
             </Droppable>
@@ -1775,15 +1783,25 @@ class App extends React.Component {
 
     // handleOnDrag : Example Number -> Table
     // assings the Table with the new Example and updates the state of tables
-    handleOnDrag(newExampleOrder, tableIndex) {
-       const currentTables = Array.from(this.state.tables);
-       const tableToChange = currentTables[tableIndex];
-       const changedTable = {...tableToChange, examples:newExampleOrder};
-       currentTables[tableIndex] = changedTable;
-       
-       this.setState({
-           tables: this.calculate(this.state.globalEnv, currentTables)
-       });
+    handleOnDrag(newExampleOrder, tableIndex, dummyMoved=false) {
+        const currentTables = Array.from(this.state.tables);
+        const tableToChange = currentTables[tableIndex];
+        if (dummyMoved) {
+            const currentFormulas = tableToChange.formulas;
+            // adds a {yellow:'yellow'} to every formula's outputs
+            const newFormulas = currentFormulas.map((_, i) => ({...currentFormulas[i], outputs:[...currentFormulas[i].outputs, {yellow: 'yellow'}]}));
+            const changedTable = {...tableToChange, examples:newExampleOrder, formulas:newFormulas}
+            currentTables[tableIndex] = changedTable;
+            this.setState({
+                tables: this.calculate(this.state.globalEnv, currentTables)
+            });
+        } else {
+            const changedTable = {...tableToChange, examples:newExampleOrder};
+            currentTables[tableIndex] = changedTable;
+            this.setState({
+                tables: this.calculate(this.state.globalEnv, currentTables)
+            });
+        }
     }
 
     playbackTimeChange(event) {
