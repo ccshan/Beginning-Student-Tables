@@ -552,15 +552,6 @@ function getRotatedDimensions(width, height, angle) {
     height = 2 * ydelta;
     return [width, height];
 }
-/*
-function getTextElementDimensions(image) {
-    let bbox = image.getBBox();
-    let width = bbox.width;
-    let height = bbox.height;
-
-    return [width, height];
-}
-*/
 
 // Image -> Integer
 function width (image) {
@@ -726,9 +717,9 @@ function render_triangle (image, x, y) {
     let green = image.color.g;
     let blue = image.color.b;
     let alpha = image.color.a / 255;
-   let w = width(image);
-   let h = height(image);
-   let D = Math.round(Math.sqrt(Math.pow(image.B, 2) - Math.pow(h, 2)));
+    let w = width(image);
+    let h = height(image);
+    let D = Math.round(Math.sqrt(Math.pow(image.B, 2) - Math.pow(h, 2)));
     // these are coordinates                                   //         b       
     let a = {x: x, y: y + h};                                  //         .       
     let b = {x: x + D, y: y};                                  //        /|\      
@@ -792,15 +783,7 @@ function make_list_renderer (xCorrect, yCorrect, xChange, yChange) {
         if (images.length === 0) {
             throw new Error('I need at least 1 image to render!');
         }
-        
-        // attempt at scaling relative to base canvas
-        /*
-        let wRatio = originalWidth / width(images[0]);
-        let hRatio = originalHeight / height(images[0]);
-        let adjustedDimensions = getAdjustHeightWidth(images[0], width(images[0]), height(images[0]), wRatio, hRatio);
-        let w = scaleImage ? adjustedDimensions[0] : width(images[0]);
-        let h = scaleImage ? adjustedDimensions[1] : height(images[0]);
-        */
+
         let w = width(images[0]);
         let h = height(images[0]);
         
@@ -973,7 +956,7 @@ function getScaleValue(image, scaled) {
     if (w <= 250 && h <= 250) {
         scaleValue = 1;
     } else if (w > 250 || h > 250) {
-        let larger = w > 250 && h <= 250 ? w : h;
+        let larger = w >= h ? w : h;
         scaleValue = 250 / larger;
     }
     return (scaled ? scaleValue : 1);
