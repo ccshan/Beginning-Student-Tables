@@ -1006,7 +1006,9 @@ function SuccinctBody(props) {
             props.handleOnDrag(examplesList, props.tableIndex, true);
         } else if(destinationIndex === examplesList.length) {
             let newYellowExample = {inputs: [{prog: yellow, key: takeKey()}], want: yellow, key: takeKey()};
-            examplesList.splice(sourceIndex, 0, newYellowExample);
+            examplesList.splice(destinationIndex, 0, newYellowExample);
+            const [reorderedExample] = examplesList.splice(sourceIndex, 1);
+            examplesList.splice(destinationIndex, 0, reorderedExample);
             props.handleOnDrag(examplesList, props.tableIndex, true);
 
         } else {
