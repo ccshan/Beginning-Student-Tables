@@ -993,17 +993,22 @@ function SuccinctBody(props) {
     // handleOnRowDrag : DragObject -> 
     // passes an updated Example order to handleOnDrag
     function handleOnRowDrag(result) {
-        const sourceIndex = result.source.index;
-        const destinationIndex = result.destination.index;
-        if (!result.destination || sourceIndex === destinationIndex) {
+        if (!result.destination || result.source.index === result.destination.index) {
             return;
         }
+        const sourceIndex = result.source.index;
+        const destinationIndex = result.destination.index;
         const examplesList = Array.from(props.examples);
-        if (sourceIndex === examplesList.length || destinationIndex === examplesList.length) {
+        if (sourceIndex === examplesList.length) {
             // add a 'yellow' example to the list at destination index
             let newYellowExample = {inputs: [{prog: yellow, key: takeKey()}], want: yellow, key: takeKey()};
             examplesList.splice(destinationIndex, 0, newYellowExample);
             props.handleOnDrag(examplesList, props.tableIndex, true);
+        } else if(destinationIndex === examplesList.length) {
+            let newYellowExample = {inputs: [{prog: yellow, key: takeKey()}], want: yellow, key: takeKey()};
+            examplesList.splice(sourceIndex, 0, newYellowExample);
+            props.handleOnDrag(examplesList, props.tableIndex, true);
+
         } else {
             const [reorderedExample] = examplesList.splice(sourceIndex, 1);
             examplesList.splice(destinationIndex, 0, reorderedExample);
@@ -1237,6 +1242,7 @@ class TestCell extends React.Component {
     constructor(props) {
         super(props);
         this.handleViewClick = this.handleViewClick.bind(this);
+        this.isZoomable = this.isZoomable.bind(this);
         this.state = {
             isOpen : false,
             currentOutput : {},
@@ -1244,13 +1250,20 @@ class TestCell extends React.Component {
     }
     // paint could be called with an extra param that specifies what type of render should be returned
     
+    // Program ->
     handleViewClick(prog) {
         // check if program returns an image
-        if (isRIMAGE(prog)){
+        if (isRIMAGE(prog) && this.isZoomable(prog)){
             this.setState(
                 {isOpen : !this.state.isOpen}
             );
         }
+    }
+
+    // Program -> Boolean
+    // determines whether the image should be zoomable
+    isZoomable(prog) {
+        return (width(prog.value) > 250 || height(prog.value) > 250);
     }
 
     componentDidUpdate(prevProps) {
@@ -1362,6 +1375,7 @@ class Want extends React.Component {
         }
         this.validProg = this.validProg.bind(this);
         this.handleViewClick = this.handleViewClick.bind(this);
+        this.isZoomable = this.isZoomable.bind(this);
     }
     validProg(text) {
         try {
@@ -1374,12 +1388,19 @@ class Want extends React.Component {
 
     handleViewClick(prog) {
         // check for return type
-        if (isRIMAGE(prog)) {
+        if (isRIMAGE(prog) && this.isZoomable(prog)) {
             this.setState(
                 {isOpen : !this.state.isOpen}
             );
         }
     }
+
+    // Prog -> Boolean
+    // determines whether the given image should be zoomable
+    isZoomable(prog) {
+        return (width(prog.value) > 250 || height(prog.value) > 250);
+    }
+
 
     componentDidUpdate(prevProps) {
         if (prevProps.want !== this.state.want) {
