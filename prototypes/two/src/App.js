@@ -1021,7 +1021,7 @@ function SuccinctBody(props) {
     const reals = props.examples.map((example, i) => (
         <Draggable key={example.key} index={i} draggableId={example.key.toString()}>
             {(provided) => (
-                <tr ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                <tr ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} tabIndex="-1">
                     <td>
                     <RemButton
                         onClick={props.disabled ? undefined : (() => remExample(example))}
@@ -1062,7 +1062,7 @@ function SuccinctBody(props) {
         // index = examples.length
         <Draggable key={peekKey(props.paramNames.length)} index={props.examples.length} draggableId={peekKey().toString()}>
             {(provided) => (
-                <tr ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                <tr ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} tabIndex="-1">
                     <td>{/* empty cell to offset rembutton */}</td>
                         <Inputs
                         disabled={props.disabled}
