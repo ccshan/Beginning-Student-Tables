@@ -56,6 +56,10 @@ const protoEnv = [
                             value: sin}},
     {name: 'cos', binding: {type: RFUNCT_T,
                             value: cos}},
+    {name: 'min', binding: {type: RFUNCT_T,
+                            value: minFunc}},
+    {name: 'max', binding: {type: RFUNCT_T,
+                            value: maxFunc}},                        
     {name: 'car', binding: {type: RFUNCT_T,
                             value: car}},
     {name: 'first', binding: {type: RFUNCT_T,
@@ -99,7 +103,7 @@ const protoEnv = [
     {name: 'substring', binding: { type: RFUNCT_T,
 				   value: substring}},
     {name: 'string=?', binding: {type: RFUNCT_T,
-                                 value: isstrequal}},
+                                 value: isstrequal}},                               
     {name: 'circle', binding: {type: RFUNCT_T,
                                value: circle}},
     {name: 'rectangle', binding: {type: RFUNCT_T,
@@ -878,6 +882,49 @@ function cos(args) {
             type: RNUM_T};
 }
 
+function minFunc(args) {
+    if (args.length < 1) {
+        throw new Error('arity mismatch');
+    }
+    for (let i = 0; i < args.length; i++) {
+        typeCheck(args[i], [RNUM_T]);
+    }
+    let value;
+    if (args.length === 1) {
+        value = args[0].value;
+    } else {
+        let smallest = args[0].value;
+        for (let i = 1; i < args.length; i++) {
+            if (args[i].value < smallest) {
+                smallest = args[i].value;
+            }
+        }
+        value = smallest;
+    }
+    return {value: value, type: RNUM_T};
+}
+
+function maxFunc(args) {
+    if (args.length < 1) {
+        throw new Error('arity mismatch');
+    }
+    for (let i = 0; i < args.length; i++) {
+        typeCheck(args[i], [RNUM_T]);
+    }
+    let value;
+    if (args.length === 1) {
+        value = args[0].value;
+    } else {
+        let largest = args[0].value;
+        for (let i = 1; i < args.length; i++) {
+            if (args[i].value > largest) {
+                largest = args[i].value;
+            }
+        }
+        value = largest;
+    }
+    return {value: value, type: RNUM_T};
+}
 
 function minus(args) {
     if (args.length < 1) {
