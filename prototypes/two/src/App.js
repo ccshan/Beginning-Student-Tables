@@ -368,8 +368,8 @@ function Succinct(props) {
     }
 
     // TODO make more sophisticated parser that can handle functions as parameters in signature
-    function validSignature(text, modTab) {
-        let sides = text.split(/\s+->\s+/g);
+    function validSignature(text) {
+        let sides = text.split(/->/g);
 
         if (sides.length !== 2) {
             return false;
@@ -380,7 +380,7 @@ function Succinct(props) {
 
         let noNull = paramTypes !== null && outType !== null;
 
-        return noNull && paramTypes.length === modTab.params.length && outType.length === 1;
+        return noNull && paramTypes.length >= 1 && outType.length === 1;
     }
 
     const reals = props.tables.map((table, index) => (
@@ -404,7 +404,7 @@ function Succinct(props) {
                 dummy={false}
                 placeholder='Signature'
                 text={props.disabled ? table.signature : undefined}
-                isValid={(text) => validSignature(text, table)}
+                isValid={(text) => validSignature(text)}
                 onValid={(text) => tableChange({...table,
                                                 signature: text},
                                                table)}
