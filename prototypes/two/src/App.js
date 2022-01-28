@@ -369,7 +369,7 @@ function Succinct(props) {
 
     // TODO make more sophisticated parser that can handle functions as parameters in signature
     function validSignature(text) {
-        let sides = text.split(/\s+->\s+/g);
+        let sides = text.split(/->/g);
 
         if (sides.length !== 2) {
             return false;
