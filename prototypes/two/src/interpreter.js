@@ -1118,7 +1118,7 @@ function gtsign(args) {
             return {value: false, type: RBOOL_T};
         }
 
-        return acc.value > cur.value ? acc : {value: false, type: RBOOL_T};
+        return acc.value > cur.value ? cur : {value: false, type: RBOOL_T};
     });
 
     if (val.value === false){
@@ -1136,7 +1136,7 @@ function gesign(args) {
             return {value: false, type: RBOOL_T};
         }
 
-        return acc.value >= cur.value ? acc : {value: false, type: RBOOL_T};
+        return acc.value >= cur.value ? cur : {value: false, type: RBOOL_T};
     });
 
     if (val.value === false){
@@ -1154,7 +1154,7 @@ function ltsign(args) {
             return {value: false, type: RBOOL_T};
         }
 
-        return acc.value < cur.value ? acc : {value: false, type: RBOOL_T};
+        return acc.value < cur.value ? cur : {value: false, type: RBOOL_T};
     });
 
     if (val.value === false){
@@ -1172,7 +1172,7 @@ function lesign(args) {
             return {value: false, type: RBOOL_T};
         }
 
-        return acc.value <= cur.value ? acc : {value: false, type: RBOOL_T};
+        return acc.value <= cur.value ? cur : {value: false, type: RBOOL_T};
     });
 
     if (val.value === false){
