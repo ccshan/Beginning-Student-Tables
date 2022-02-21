@@ -96,14 +96,16 @@ const protoEnv = [
                           value: ltsign}},
     {name: '<=', binding: {type: RFUNCT_T,
                            value: lesign}},
+    {name: 'number->string', binding: {type: RFUNCT_T,
+                                       value: numberToString}},
     {name: 'string-length', binding: {type: RFUNCT_T,
                            value: stringLength}},
     {name: 'string-append', binding: {type: RFUNCT_T,
                            value: stringAppend}},
     {name: 'substring', binding: { type: RFUNCT_T,
-				   value: substring}},
+                                   value: substring}},
     {name: 'string=?', binding: {type: RFUNCT_T,
-                                 value: isstrequal}},                               
+                                 value: isstrequal}},
     {name: 'circle', binding: {type: RFUNCT_T,
                                value: circle}},
     {name: 'rectangle', binding: {type: RFUNCT_T,
@@ -1198,6 +1200,14 @@ function isstrequal(args) {
     } else {
         return {value, type: RBOOL_T};
     }
+}
+function numberToString(args) {
+    if (args.length !== 1) {
+        throw new Error('arity mismatch');
+    }
+    let firstArg = args[0];
+    typeCheck(firstArg, [RNUM_T]);
+    return {value: firstArg.value.toString(), type: RSTRING_T};
 }
 function stringLength(args) {
     if (args.length !== 1) {
