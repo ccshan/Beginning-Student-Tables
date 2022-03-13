@@ -106,6 +106,8 @@ const protoEnv = [
                                    value: substring}},
     {name: 'string=?', binding: {type: RFUNCT_T,
                                  value: isstrequal}},
+    {name: 'string-contains?', binding: {type: RFUNCT_T,
+                                 value: stringcontains}},
     {name: 'circle', binding: {type: RFUNCT_T,
                                value: circle}},
     {name: 'rectangle', binding: {type: RFUNCT_T,
@@ -1200,6 +1202,20 @@ function isstrequal(args) {
     } else {
         return {value, type: RBOOL_T};
     }
+}
+function stringcontains(args) {
+    if (args.length !== 2) {
+        throw new Error('arity mismatch');
+    }
+
+    let firstArg = args[0];
+    let sndArg = args[1];
+
+    typeCheck(firstArg, [RSTRING_T]);
+    typeCheck(sndArg, [RSTRING_T]);
+
+    return {value: sndArg.value.includes(firstArg.value),
+            type: RBOOL_T};
 }
 function numberToString(args) {
     if (args.length !== 1) {
