@@ -554,6 +554,7 @@ function getRotatedDimensions(width, height, angle) {
 }
 
 // Image -> Integer
+// must be any rn, cuz this is used in a function where param *must* be a number, so it cannot return type error, even tho it would cuz a halt in the program
 function width (image) {
     switch (image.type) {
     case 'circle':
@@ -584,6 +585,7 @@ function width (image) {
 }
 
 // Image -> Integer
+// same issue as with width function
 function height (image) {
     switch (image.type) {
     case 'circle':
@@ -963,7 +965,7 @@ function getScaleValue(image, scaled) {
 }
 
 // Image -> top level SVG
-function paint (image, scaled) {
+function paint (image, scaled=false) {
     let scaleValue = getScaleValue(image, scaled);
     let picture = render(image, 0, 0);
     let w = scaled ? width(image) * scaleValue : width(image);

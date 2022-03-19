@@ -2,7 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter, Route } from 'react-router-dom';
 import './index.css';
-import { App, FetchRecordings, ListRecordings } from './App';
+import { App } from './App';
+import { ListRecordings } from "./ListRecordings";
+import { FetchRecordings } from "./FetchRecordings";
 import * as serviceWorker from './serviceWorker';
 
 ReactDOM.render(

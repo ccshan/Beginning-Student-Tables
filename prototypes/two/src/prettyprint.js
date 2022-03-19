@@ -1,4 +1,4 @@
-import {yellow, isBooleanFormula} from './header.js';
+import { isBooleanFormula } from './input-definitions';
 import {RVAR_T, RAPP_T, RFUNCT_T, RNUM_T, RBOOL_T, RSTRING_T, RLIST_T, RSYM_T} from './interpreter.js';
 
 /*********************
@@ -411,8 +411,8 @@ function toBSL(tables, listOrCons, width, ribbon) {
         let params = spread(table.params.map((param) => fieldToDoc(param.name)));
 
         let checkExpects = table.examples.map((example) => {
-            let inputs = stack(example.inputs.map((input) => fieldToDoc(input.prog)));
-            let want = fieldToDoc(example.want);
+            let inputs = stack(example.inputs.map((input) => fieldToDoc(input.prog.validated)));
+            let want = fieldToDoc(example.want.validated);
 
             return pretty(nest(1, bracket('(', group(stack([text('check-expect'), bracket('(', nest(1, stack([name, inputs])), ')'), want])), ')')));
         }).join('\n');
@@ -438,7 +438,7 @@ function toBSL(tables, listOrCons, width, ribbon) {
         let splitForms = splitFormulas(formulas);
 
         // this one's a doc
-        let nonbools = stack(splitForms.nonbools.map((form) => fieldToDoc(form.prog))),
+        let nonbools = stack(splitForms.nonbools.map((form) => fieldToDoc(form.prog.validated))),
             bools;
 
         if (splitForms.bools.length !== 0) {
