@@ -159,7 +159,6 @@ const initEnv = makeStruct('posn', ['x', 'y'], protoEnv);
 
 // Program, Environment -> Program
 function interp(prog, env) {
-    console.log('interp prog: ', prog);
     function lookup(name) {
         let val = env.reduce((acc, variable) => {
             if (acc !== undefined) {
@@ -242,7 +241,6 @@ function interp(prog, env) {
 
             // shouldn't have default
         default:
-            //console.log(prog);
             throw new TypeError("Unknown Type " + prog.value);
     }
 }
@@ -290,7 +288,6 @@ value have: numbers, bool, lists of values, images, colors, structures, and func
 
 // Program -> [(String or SVG)]
 function unparse_cons(prog, scaleImage=false) {
-    console.log('unparse called', prog);
     switch (prog.type) {
         case RNUM_T:
             return [prog.value];
@@ -321,7 +318,6 @@ function unparse_cons(prog, scaleImage=false) {
         case RSTRUCT_T:
             return [`(make-${prog.value.id}`, ...prog.value.fields.map((field) => unparse_cons(field.binding)).reduce((acc, arr) => [...acc, ' ', ...arr], ''), ')'];
         default:
-            //console.log(prog);
             return 'error or something';
     }
 }
@@ -476,7 +472,6 @@ function makeStruct(superID, fieldIDs, env) {
                 if (acc !== undefined) {
                     return acc;
                 } else if (field.id === fid) {
-                    //console.log(field);
                     return field.binding;
                 } else {
                     return undefined;

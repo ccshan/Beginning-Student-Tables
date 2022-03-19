@@ -74,10 +74,7 @@ class Want extends React.Component<Props, State> {
             valueCell = <script />;
         } else {
             try {
-                console.log('props.want', this.props.want);
                 let evalWant:Program = interp(this.props.want.validated, this.props.globalEnv);
-                console.log('eval want: ', evalWant);
-                console.log('deep equals', deepEquals(evalWant, this.props.want.validated));
                 if (deepEquals(evalWant, this.props.want.validated)) {
                     valueCell = <script />;
                 } else {

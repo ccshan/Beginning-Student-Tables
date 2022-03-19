@@ -37,7 +37,6 @@ class ValidatedArea extends React.Component<Props, State> {
 
     render() {
         let text: (string | undefined);
-        console.log('valid area passed rawText: ', this.props.rawText);
         if (this.props.text === undefined) {
             text = this.state.text;
         } else {

@@ -546,7 +546,7 @@ class App extends React.Component<Props, State> {
             let changed = false;
             tables = Array.from(this.state.tables);
             tables.map((table, tabIdx) => {
-                if (checkExpect.name === table.name || isTableNameYellow(table.name)) {
+                if (!changed && (checkExpect.name === table.name || isTableNameYellow(table.name))) {
                     tables = this.addToTable(checkExpect, tabIdx);
                     this.setState({tables: tables});
                     changed = true;
@@ -571,11 +571,20 @@ class App extends React.Component<Props, State> {
             inputs = [...inputs, tabInput];
         });
         let examples:ExampleArray = [{inputs: inputs, want: checkExpect.want, key: takeKey()}];
+
+        let newParams:ParameterArray = [];
+        checkExpect.inputs.map((input, i) => {
+            if (i >= newParams.length) {
+                let newParam:Parameter = { name: {yellow: "yellow"}, key: takeKey() };
+                newParams = [...newParams, newParam];
+            }
+        });
+
         let newTab:Table = {name: checkExpect.name, examples: examples, 
                             formulas: [{prog: {raw: "", validated: {yellow: "yellow"}}, 
                                         outputs: [{raw: "", validated: {yellow: "yellow"}}], 
                                         key: takeKey()}],
-                            params: [{ name: {yellow: 'yellow'}, key: takeKey() }],
+                            params: newParams,
                             signature: {yellow: 'yellow'},
                             purpose: {yellow: 'yellow'},
                             key: takeKey()};
@@ -584,86 +593,101 @@ class App extends React.Component<Props, State> {
     }
     
     // adds check-expect to an existing table
-    addToTable(checkExpect: CheckExpect, tabIdx:number) {
+    addToTable(checkExpect: CheckExpect, tabIdx:number):Array<Table> {
+
+        function isExampleInTable(example:Example, table:Table) {
+            console.log('examples match: ', example, table);
+            for (let i = 0; i < table.examples.length; i++) {
+                if (examplesSame(example, table.examples[i]) && (table.examples[i].want.raw === example.want.raw)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function examplesSame(exOne: Example, exTwo: Example) {
+            console.log('ex1: ', exOne, ' ex2: ', exTwo);
+            if (exOne.inputs.length !== exTwo.inputs.length || exOne.want.raw !== exTwo.want.raw) {
+                console.log('not same length, returning false');
+                return false;
+            }
+            for (let i = 0; i < exOne.inputs.length; i++) {
+                if (exOne.inputs[i].prog.raw !== exTwo.inputs[i].prog.raw) return false;
+            }
+            return true;
+        }
+
         let tables = this.state.tables;
-        console.log('tables: ', tables);
         let tableToChange = tables[tabIdx];
-        console.log('table to change: ', tableToChange);
-        tableToChange.examples.forEach((example, eIdx) => {
-            let newInputs:InputArray = [];
-            example.inputs.forEach((input, iIdx) => {
-                checkExpect.inputs.forEach((ceInput:ProgramInput, ceIdx:number) => {
-                    let newExample:Example;
-                    let newExamples;
-                    let newInput:Input;
-                    let newFormulas:FormulaArray = [];
-                    let newParams:ParameterArray = [];
-                    // There is some repeated code in here but I am too lazy to pull those out rn
-                    if (ceInput.raw === input.prog.raw && checkExpect.want.raw === example.want.raw) {
-                        // example already exists, do nothing
-                        newExamples = tableToChange.examples;
-                        newFormulas = tableToChange.formulas;
-                        newParams = tableToChange.params;
-                    } else {
-                        newInput = { prog: { raw: ceInput.raw, validated: ceInput.validated }, key: takeKey() };
-                        newInputs = [...newInputs, newInput];
-                        let newWant:ProgramInput = { raw: checkExpect.want.raw, validated: checkExpect.want.validated};
-                        newExample = { inputs: newInputs, want: newWant, key: takeKey() };
-
-                        tableToChange.formulas.map((formula) => {
-                            let formulaNewOutputs:OutputArray = [...formula.outputs, {raw: "", validated: {yellow: "yellow"}}];
-                            let newFormula:Formula = {...formula, outputs: formulaNewOutputs, key: takeKey()};
-                            newFormulas = [...newFormulas, newFormula];
-                        });
-
-                        checkExpect.inputs.forEach((input) => {
-                            let newParam:Parameter = { name: {yellow: "yellow"}, key: takeKey() };
-                            newParams = [...newParams, newParam];
-                        });
-
-                        if (!isValidatedProgInputNonYellow(input.prog.validated)) {
-                            // empty yellow example, insert check-expect there
-                            /*
-                            newInput = { prog: { raw: ceInput.raw, validated: ceInput.validated }, key: takeKey() };
-                            newInputs = [...newInputs, newInput];
-                            let newWant:ProgramInput = { raw: checkExpect.want.raw, validated: checkExpect.want.validated};
-                            newExample = { inputs: newInputs, want: newWant, key: takeKey() };
-                            */
-                            // insert this example into current examples at the input idx
-                            let currExamples = Array.from(tableToChange.examples);
-                            currExamples[iIdx] = newExample;
-                            newExamples = currExamples;
-                        } else {
-                            // adds new example row
-                            /*
-                            newInput = { prog: { raw: ceInput.raw, validated: ceInput.validated }, key: takeKey() };
-                            newInputs = [...newInputs, newInput];
-                            let newWant:ProgramInput = { raw: checkExpect.want.raw, validated: checkExpect.want.validated};
-                            newExample = { inputs: newInputs, want: newWant, key: takeKey() };
-                            */
-                            newExamples = [...tableToChange.examples, newExample];
-                            // adds appropriate amount of yellow formula outputs to table formulas
-                            /*
-                            tableToChange.formulas.map((formula) => {
-                                let formulaNewOutputs:OutputArray = [...formula.outputs, {raw: "", validated: {yellow: "yellow"}}];
-                                let newFormula:Formula = {...formula, outputs: formulaNewOutputs, key: takeKey()};
-                                newFormulas = [...newFormulas, newFormula];
-                            });
-                            */
-                        }
-                    }
-
-                    let newTab:Table = {...tableToChange, 
-                                        formulas: newFormulas, params: newParams,
-                                        name: checkExpect.name, examples: newExamples};
-                    console.log('new table: ', newTab);
-                    tables[tabIdx] = newTab;
-                });
-            });
+        
+        let newExample:Example;
+        let newInputs:InputArray = [];
+        checkExpect.inputs.forEach((ceInput:ProgramInput, ceIdx:number) => {
+            let newInput = { prog: { raw: ceInput.raw, validated: ceInput.validated }, key: takeKey() };
+            newInputs = [...newInputs, newInput];
         });
+
+        let newWant:ProgramInput = { raw: checkExpect.want.raw, validated: checkExpect.want.validated};
+        newExample = { inputs: newInputs, want: newWant, key: takeKey() };
+
+        if (isExampleInTable(newExample, tableToChange)) {
+            console.log('example already in table, returning: ', tables);
+            return tables;
+        }
+
+        let newFormulas:FormulaArray = [];
+        let newParams:ParameterArray = tableToChange.params;
+        let newExamples:ExampleArray = [];
+        tableToChange.examples.forEach((example, eIdx) => {
+            let newExample:Example;
+            let newInputs:InputArray = [];
+            
+            checkExpect.inputs.forEach((ceInput:ProgramInput, ceIdx:number) => {
+                let newInput = { prog: { raw: ceInput.raw, validated: ceInput.validated }, key: takeKey() };
+                newInputs = [...newInputs, newInput];
+            });
+
+            let newWant:ProgramInput = { raw: checkExpect.want.raw, validated: checkExpect.want.validated};
+            newExample = { inputs: newInputs, want: newWant, key: takeKey() };
+ 
+            if (!isValidatedProgInputNonYellow(example.inputs[eIdx].prog.validated)) {
+                let currExamples = Array.from(tableToChange.examples);
+                currExamples[eIdx] = newExample;
+                newExamples = currExamples;
+            } else {
+                newExamples = [...tableToChange.examples, newExample];
+            }
+        });
+
+        checkExpect.inputs.map((input, i) => {
+            if (i >= newParams.length) {
+                let newParam:Parameter = { name: {yellow: "yellow"}, key: takeKey() };
+                newParams = [...newParams, newParam];
+            }
+        });
+
+        let formulasArr = tableToChange.formulas;
+        tableToChange.formulas.map((formula, i) => {
+            let newOutputs:OutputArray = formula.outputs;
+            newExamples.map((example, i) => {
+                if (i >= formula.outputs.length) {
+                    let newOutput:Output = { raw: "", validated: { yellow: "yellow" } };
+                    newOutputs = [...newOutputs, newOutput];
+                }
+            });
+            let newFormula:Formula = {...formula, outputs: newOutputs};
+            formulasArr[i] = newFormula;
+        });
+        newFormulas = formulasArr;
+
+        let newTab:Table = {...tableToChange, 
+            formulas: newFormulas, 
+            params: newParams,
+            name: checkExpect.name, 
+            examples: newExamples};
+        tables[tabIdx] = newTab;
         return tables;
     }
-
 
     // event is the scroll bar
     playbackTimeChange(event:any) {

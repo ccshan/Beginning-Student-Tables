@@ -30,7 +30,6 @@ class ValidatedInput extends React.Component<Props, State> {
             this.setState({ text });
             if (this.props.isValid(text)) {
                 this.props.onValid(text);
-                console.log('text change called in valid input: ', text)
             } else if (text === '' && !this.props.dummy) {
                 this.props.onEmpty();
             }
@@ -39,7 +38,6 @@ class ValidatedInput extends React.Component<Props, State> {
 
     render() {
         let text: (string | undefined);
-        console.log('passed rawText', this.props.rawText);
 
         if (this.props.text === undefined) {
             text = this.state.text;
@@ -50,7 +48,7 @@ class ValidatedInput extends React.Component<Props, State> {
                 text = "";
             }
         }
-        
+
         if (this.props.rawText) {
             text = this.props.rawText.length !== 0 ? this.props.rawText : text;
         } 
