@@ -100,7 +100,6 @@ export function isValidatedProgInputNonYellow(progInput: ValidatedProgInput) : p
 }
 
 export function isTableNameYellow(tableName: NameInput): tableName is Yellow {
-    console.log(tableName as string);
     return (tableName as string).length === undefined;
 }
 

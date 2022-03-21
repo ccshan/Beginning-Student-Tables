@@ -8,7 +8,6 @@ interface Props {
 
 }
 function DummyCell(props:Props) {
-    // i am pretty sure this is the intended thing that is supposed to happen
     if ((!isOutputNonYellow(props.parentOutput) && isYellowProgramGray(props.parentOutput)) || (isOutputNonYellow(props.parentOutput) && isRBOOL(props.parentOutput.validated) && props.parentOutput.validated.value === false)) {
         return (
             <td className={'gray'}>

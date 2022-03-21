@@ -43,10 +43,7 @@ function Succinct(props: Props) {
 
   // String -> Boolean
   function validName(text: (string | Yellow), modTab: (Table | {})): boolean {
-    // add Enviornment type interface
     function inEnv(name: (string | Yellow), env: Environment) {
-      // .reduce is like foldr
-      // acc is boolean
       return env.reduce((acc, variable) => {
         if (acc) {
           return true;
@@ -64,14 +61,12 @@ function Succinct(props: Props) {
     let tableVars:Environment = props.tables.filter((table) => table !== modTab).map((otherTab) => ({ name: otherTab.name, binding: null }));
     let env:Environment, paramVars;
     if (isTableNonEmpty(modTab)) {
-      // there's a chance that it shouldn't be name: param.name
       paramVars = modTab.params.map((param) => ({ name: param.name, binding: null }));
       env = [...props.globalEnv, ...tableVars, ...paramVars];
     } else {
       env = [...props.globalEnv, ...tableVars];
     }
 
-    // this could be wrong, here I am assuming that if text is yellow, then this automatically returns false
     return typeof text === "string" ? nameRE.test(text) && !inEnv(text, env) : false;
   }
 
@@ -174,7 +169,7 @@ function Succinct(props: Props) {
       <div className='grow'>{/* div to prevent text fields from stretching across the screen */}</div>
     </div>
   ));
-  // import peekKey();
+
   const dummy = (
     <div key={peekKey()} className='flex_horiz table'>
       <div className='flex_vert no_grow'>

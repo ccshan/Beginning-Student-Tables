@@ -61,16 +61,7 @@ function SuccinctHead(props: Props) {
         } else {
             alteredForms = props.formulas.map((form) => form === oldForm ? newForm : form);
         }
-        console.log('atlered forms', alteredForms);
         props.formulasChange(alteredForms);
-        /*
-        if (props.formulas.indexOf(oldForm) === -1) {
-            alteredForms = [...props.formulas, newForm];
-        } else {
-            alteredForms = props.formulas.map((form) => form === oldForm ? newForm : form);
-        }
-        props.formulasChange(alteredForms);
-        */
     }
 
     // Formula -> Number -> Number

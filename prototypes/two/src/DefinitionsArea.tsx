@@ -34,7 +34,6 @@ class DefinitionsArea extends React.Component<Props, State> {
         this.setState({ error: this.props.prefixChange(text) });
     }
 
-    // onEmpty is set null cuz it shouldn't be used in ValidatedArea but typescript requires it to be defined
     render() {
         const e = this.props.error === undefined
             ? this.state.error

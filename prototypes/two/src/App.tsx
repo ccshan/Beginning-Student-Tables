@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import 'react-table/react-table.css';
-import { interp, interpPrefix, unparse_cons, unparse_list, initEnv, isRAPP, RFUNCT_T, isRLIST, isRIMAGE, isRSTRUCT, RIMAGE_T, RLIST_T, RAPP_T } from './interpreter.js';
+import { interp, interpPrefix, unparse_cons, unparse_list, initEnv, isRAPP, RFUNCT_T, isRLIST, isRIMAGE, isRSTRUCT, RIMAGE_T, RLIST_T, RAPP_T, RSTRUCT_T } from './interpreter.js';
 import { parse, parsePrefix, parseQ } from './parser.js';
 import { allBools, gray, pink, yellow } from './header';
 import { paint, width, height, makeRectangle, makeOverlay } from './image';
@@ -97,7 +97,7 @@ function deepEquals(proga: Program, progb: Program): boolean {
     }
 
     // for whatever reason couldn't find "RSTRUCT_T" ???? idk why
-    if (proga.type === 11) {
+    if (proga.type === RSTRUCT_T) {
         let structa = proga.value;
         let structb = progb.value;
 
@@ -144,7 +144,6 @@ function deepEquals(proga: Program, progb: Program): boolean {
 
             // make image that contains the xml data so we can draw it
             let img = document.createElement('img');
-            //console.log(img);
             img.src = image64;
 
             // draw the image onto the canvas
@@ -152,9 +151,6 @@ function deepEquals(proga: Program, progb: Program): boolean {
             if (ctx != null) {
                 ctx.drawImage(img, 0, 0);
 
-                // Temporary(?) fix to crash when either want or output image width is 0:
-                // Error Message: IndexSizeError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D':
-                //                the source width is 0
                 if (width(image) || height(image) === 0) {
                     return ctx.getImageData(0, 0, 1, 1).data;
                 } else {
@@ -184,16 +180,6 @@ function deepEquals(proga: Program, progb: Program): boolean {
 
     return proga!.value === progb!.value;
 }
-
-
-/*
-  notes:
-  #inputs === #params
-  #outputs === #examples
-  ---------------------
-  |#inputs !== #outputs| (well it can but not always)
-  ---------------------
-*/
 
 interface Props {
     snapshots : Snapshot
@@ -267,7 +253,7 @@ class App extends React.Component<Props, State> {
         if (isSnapshotArray(this.props.snapshots) &&
             this.props.snapshots !== prevProps.snapshots &&
             this.props.snapshots.length > 0) {
-            let prefix = this.props.snapshots[0].prefix; // I think prefix refers to prefix expression
+            let prefix = this.props.snapshots[0].prefix;
             let prefixError = false;
             let globalEnv = initEnv;
             try {
@@ -293,9 +279,6 @@ class App extends React.Component<Props, State> {
         }
     }
 
-    /// this should be program, but then program is used as: program.map((table) => ...)
-    // so does this mean that programm is really a list of tables?
-    // ^^ yes indeed program is supposed to be an array of tables
     calculate(env:Environment, program:Array<Table>):Array<Table> {
         function makeLookup(table:Table) {
             function lookup(args:ProgramArray) {
@@ -308,7 +291,6 @@ class App extends React.Component<Props, State> {
                         return acc;
                     }
 
-                    // I have no idea what should happen if this is called on a table with no params
                     if (example.inputs.every((input, i) => {
                         if (!isValidatedProgInputNonYellow(input.prog.validated)) {
                             return false;
@@ -357,18 +339,14 @@ class App extends React.Component<Props, State> {
         let tableEnv = [...env, ...lookups];
 
         function calcTable(table:Table):Table {
-            // there is some error over here
             function calcFormula(formula:Formula, examples:ExampleArray):Formula {
                 let outputs:OutputArray = examples.map((example) => {
 
                     if (!isValidatedProgInputNonYellow(example.want.validated) && isYellowProgramGray(example.want.validated)) {
-                        console.log('output is gray');
                         return {raw: "", validated: gray};
                     } if (example.want.validated === pink) {
-                        console.log('output is pink');
                         return {raw: "", validated: pink};
                     } else if (!example.inputs.every((input) => isValidatedProgInputNonYellow(input.prog.validated)) || !isValidatedProgInputNonYellow(formula.prog.validated)) {
-                        console.log('output is yellow');
                         // if any of the inputs or the formula isn't initialized, return yellow
                         return {raw: "", validated: yellow};
                     }
@@ -389,11 +367,8 @@ class App extends React.Component<Props, State> {
 
                     let output:Output;
                     try {
-                        console.log('tried to interp: ', formula);
                         let outputProg:Program = interp(formula.prog.validated, env);
-                        console.log('unparsed output prog: ', unparse(outputProg)[0]);
                         output = {raw: unparse(outputProg)[0], validated: outputProg};
-                        console.log(output);
                     } catch (e) {
                         output = e as any; /// new variable messgae to user 
                     }
@@ -401,14 +376,9 @@ class App extends React.Component<Props, State> {
                     return output;
                 });
 
-                console.log('outputs:', outputs, 'all bools: ', allBools(outputs), 'is boolean form: ', isBooleanFormula(formula));
                 if (allBools(outputs) || (isBooleanFormula(formula) && formula.thenChildren.length !== 0)) {
                     function maybeSpecial(example:Example, output:Output):Example {
-                        console.log('maybe special: ', example, output);
-                        console.log('mb calc: ', (isOutputNonYellow(output) && isRBOOL(output.validated) && output.validated.value === false));
-                        if ("gray" in example.want.validated || (isOutputNonYellow(output) && isRBOOL(output.validated) && output.validated.value === false)) {
-                        // had to turn this into an Example, instead of returning just gray, so it could be wrong
-                            console.log('output is gray in maybe special');
+                        if (!isOutputNonYellow(output) && isYellowProgramGray(output) || (isOutputNonYellow(output) && isValidatedProgInputNonYellow(output.validated) && output.validated.value === false)) {
                             return {inputs: [], want: {raw:'', validated: gray}, key: takeKey()};
                         }
                             // used to be: typeof outputs.value !== 'boolean'
@@ -422,7 +392,6 @@ class App extends React.Component<Props, State> {
                     } else {
                         let subExamples = examples.map((example, i) => maybeSpecial(example, outputs[i]));
                         thenChildren = formula.thenChildren.map((formula:Formula) => calcFormula(formula, subExamples));
-                        console.log(thenChildren);
                     }
 
                     return {
@@ -435,8 +404,6 @@ class App extends React.Component<Props, State> {
                         ...formula,
                         outputs
                     };
-                    // supposed to delete thenChildren, idk why
-                    // delete newFormula.thenChildren;
                     
                     // this should work the same as delete newFormula.thenChildren;
                     newFormula = {prog: newFormula.prog, outputs: newFormula.outputs, key: newFormula.key};
@@ -444,17 +411,12 @@ class App extends React.Component<Props, State> {
                 }
             }
 
-            // is table name yellow
             
             if (isTableNameYellow(table.name) || !table.params.every((param:Parameter) => isParamNonYellow(param))) {
-                console.log('not every param is non yellow', !table.params.every((param:Parameter) => isParamNonYellow(param)) );
-                console.log('isTableNameYellow:', isTableNameYellow(table.name));
-                console.log('here');
                 // if the table or any of the table's parameters don't have a name yet, freeze outputs
                 return { ...table };
             } else {
                 let formulas = table.formulas.map((formula) => calcFormula(formula, table.examples));
-                console.log(formulas);
                 return {
                     ...table,
                     formulas
@@ -493,9 +455,7 @@ class App extends React.Component<Props, State> {
     programChange(newProg:Array<Table>) {
         this.setState(state => {
             let prefix = state.prefix;
-            console.log('pre calc table: ', newProg);
             let tables = this.calculate(state.globalEnv, newProg);
-            console.log('calc tables result: ', tables);
             return {
                 tables,
                 snapshots: !this.props.snapshots &&  state.snapshots !== undefined && isSnapshotArray(state.snapshots)
@@ -534,14 +494,12 @@ class App extends React.Component<Props, State> {
     importCheckExpects(expression:string) {
         let tables:Array<Table> = Array.from(this.state.tables);
         let checkExpects:Array<CheckExpect>;
-        console.log('ce expr: ', expression);
         try {
             checkExpects = parsePrefix(expression, true);
         } catch (ceError) {
             return;
         }
         // I probably don't need this many setStates in here
-        console.log(checkExpects);
         checkExpects.map((checkExpect, ceIdx) => {
             let changed = false;
             tables = Array.from(this.state.tables);
@@ -555,15 +513,13 @@ class App extends React.Component<Props, State> {
             if (!changed) {
                 tables = this.addNewTable(checkExpect);
                 this.setState({tables: tables});
-                console.log('new table added');
             }
         });
-        console.log('tables after import: ', tables);
         this.setState({tables : this.calculate(this.state.globalEnv, tables)})
     }
 
     // adds a table with the given check-expect to this.state.tables
-    addNewTable(checkExpect: CheckExpect) {
+    addNewTable(checkExpect: CheckExpect):Array<Table> {
         let tables = this.state.tables;
         let inputs:InputArray = [];
         checkExpect.inputs.forEach((input:ProgramInput, inputIdx:number) => {
@@ -596,7 +552,6 @@ class App extends React.Component<Props, State> {
     addToTable(checkExpect: CheckExpect, tabIdx:number):Array<Table> {
 
         function isExampleInTable(example:Example, table:Table) {
-            console.log('examples match: ', example, table);
             for (let i = 0; i < table.examples.length; i++) {
                 if (examplesSame(example, table.examples[i]) && (table.examples[i].want.raw === example.want.raw)) {
                     return true;
@@ -606,9 +561,7 @@ class App extends React.Component<Props, State> {
         }
 
         function examplesSame(exOne: Example, exTwo: Example) {
-            console.log('ex1: ', exOne, ' ex2: ', exTwo);
             if (exOne.inputs.length !== exTwo.inputs.length || exOne.want.raw !== exTwo.want.raw) {
-                console.log('not same length, returning false');
                 return false;
             }
             for (let i = 0; i < exOne.inputs.length; i++) {
@@ -631,7 +584,6 @@ class App extends React.Component<Props, State> {
         newExample = { inputs: newInputs, want: newWant, key: takeKey() };
 
         if (isExampleInTable(newExample, tableToChange)) {
-            console.log('example already in table, returning: ', tables);
             return tables;
         }
 

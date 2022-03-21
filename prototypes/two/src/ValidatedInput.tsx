@@ -85,7 +85,4 @@ class ValidatedInput extends React.Component<Props, State> {
     }
 }
 
-// need a way to keep the raw text as value
-// actually thats impossible since Paramater cannot be a ProgramInput
-
 export { ValidatedInput };

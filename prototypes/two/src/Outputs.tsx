@@ -22,7 +22,6 @@ function Outputs(props:Props) {
             return formula.thenChildren.reduce((acc, child) => acc + countWidth(child), 2);
         }
     }
-    console.log('Outputs formulas: ', props.formulas)
     if (props.dummy) {
         return (
             <React.Fragment>
@@ -34,7 +33,6 @@ function Outputs(props:Props) {
     } else {
         return (
             <React.Fragment>
-                {props.formulas.map((formula:Formula) => (console.log('formula outputs: ', formula.outputs)))}
                 {props.formulas.map((formula:Formula) => (
                     <React.Fragment key={formula.key}>
                         <TestCell

@@ -54,7 +54,6 @@ function ParametersComp(props: Props) {
     // changes the name of the given parameter
     // if that parameter doesn't exist yet, it makes it
     function paramChange(newParam: Parameter, modParam: ({} | Parameter)): void {
-        console.log('param change called');
 
         let alteredParams: ParameterArray, alteredExamples: ExampleArray;
         // check if the param exists in params
@@ -67,7 +66,6 @@ function ParametersComp(props: Props) {
         } else {
             alteredParams = props.params.map((param) => param === modParam ? newParam : param);
             alteredExamples = props.examples;
-            console.log(alteredExamples, alteredParams);
         }
         return props.paramsExamplesChange(alteredParams, alteredExamples);
     }

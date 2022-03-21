@@ -14,7 +14,6 @@ interface Props {
     globalEnv : Environment
     disabled: boolean
 
-    // this could be wrong
     wantChange : (want: ProgramInput) => void
 }
 
@@ -41,7 +40,7 @@ class Want extends React.Component<Props, State> {
         return true;
     }
 
-    // Program ->
+    // Program -> State
     handleViewClick(prog:Program) {
         // check for return type
         if (this.isZoomable(prog)) {
@@ -54,6 +53,7 @@ class Want extends React.Component<Props, State> {
     // Progam -> Boolean
     // determines whether the given image should be zoomable
     isZoomable(prog:Program) {
+        // width and height max could be constants...
         return prog.type === RIMAGE_T ? (width(prog.value) > 250 || height(prog.value) > 250) : false;
     }
 

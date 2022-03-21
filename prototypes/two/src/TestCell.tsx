@@ -60,11 +60,8 @@ class TestCell extends React.Component<Props, State> {
     }
 
     render() {
-        // add gray, pink to validated
         let output = this.props.output;
-        console.log('test cell this.props.output: ', output);
 
-        console.log('GRAY CALL: ', !isOutputNonYellow(output) && isYellowProgramGray(output));
         if (!isOutputNonYellow(output) && isYellowProgramGray(output)) {
             return (
                 <td className={'gray'}>
@@ -82,7 +79,6 @@ class TestCell extends React.Component<Props, State> {
         }
 
         if ((!isOutputNonYellow(output) && "yellow" in output) || (isOutputNonYellow(output) && output.raw === "")) {
-            console.log('yellow called');
             return (
                 <td className={'yellow'}>
                 </td>

@@ -50,10 +50,8 @@ function SuccinctBody(props: Props) {
         props.examplesFormulasChange(aliveExamples, alteredForms);
     }
 
-    // TODO: Update this to match new data definitions
     // split into function that makes a new and function that handles not exist exist case
     function exampleChange(newExample: Example, oldExample: (Example | {})) {
-        console.log('new example', newExample);
         const exists = isExampleNonEmpty(oldExample) ? props.examples.indexOf(oldExample) !== -1 : false;
 
         // Formula -> Formula
@@ -102,7 +100,6 @@ function SuccinctBody(props: Props) {
         let newYellowExample: Example;
 
         if (sourceIndex === examplesList.length) {
-            // add a 'yellow' example to the list at destination index
             newYellowExample = { inputs: [{ prog: {raw: '' , validated: { yellow : 'yellow' }}, key: takeKey() }], want: {raw: '' , validated: { yellow : 'yellow' }}, key: takeKey() };
             examplesList.splice(destinationIndex, 0, newYellowExample);
             props.handleOnDrag(examplesList, props.tableIndex!, true);

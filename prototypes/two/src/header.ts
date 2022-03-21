@@ -1,5 +1,5 @@
 import { isRBOOL, Yellow } from './global-definitions';
-import { isOutputNonYellow, OutputArray } from './input-definitions';
+import { isOutputNonYellow, isYellowProgramGray, OutputArray } from './input-definitions';
 
 /************
     Colors
@@ -19,19 +19,10 @@ export const yellow:Yellow = {yellow: 'yellow'};
 // [Program] -> Boolean
 // returns true if progs has at least one member and all of its members are boooleans
 //    otherwise returns false
-/*
-export function allBools(progs){
-    if (progs.length === 0 || progs.every((prog) => prog === gray)) {
-        return false;
-    }
-
-    return progs.every((prog) => prog === gray || isRBOOL(prog));
-}
-*/
 export function allBools(outputs:OutputArray){
-    if (outputs.length === 0 || outputs.every((output) => output === gray)) {
+    if (outputs.length === 0 || outputs.every((output) => !isOutputNonYellow(output) && isYellowProgramGray(output))) {
         return false;
     }
 
-    return outputs.every((output) => output === gray || (isOutputNonYellow(output) && isRBOOL(output.validated)));
+    return outputs.every((output) =>  (!isOutputNonYellow(output) && isYellowProgramGray(output)) || (isOutputNonYellow(output) && isRBOOL(output.validated)));
 }

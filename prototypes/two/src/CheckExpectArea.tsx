@@ -1,6 +1,5 @@
 import React from "react";
 import { ErrorMessage } from "./ErrorMessage";
-import { parsePrefix } from "./parser";
 import { ValidatedArea } from "./ValidatedArea";
 
 interface Props {
@@ -24,11 +23,11 @@ class CheckExpectArea extends React.Component<Props, State> {
     }
 
     checkExpectValid(text:(string)) {
-        //console.log('text that is recieved here: ', text);
         this.setState({content: text});
     }
 
     validCheckExpect(text:(string | undefined)) {
+        // could turn red if there is parse error
         return true;
     }
 

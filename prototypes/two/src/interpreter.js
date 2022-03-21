@@ -274,17 +274,7 @@ function makeDefine (name, binding, env) {
     }
 }
 
-// binding should be value
-// A Vlaue is: number, bool, image,
-/*
-value have: numbers, bool, lists of values, images, colors, structures, and functions
-    functions are case of values
-    if we have to only have one kind of functions, then they should just be javascript functions
-    that take a list of values as input and return a value
-    or we can define a data structure to represent these functions
 
-    values don't have: variables, applications, if
- */
 
 // Program -> [(String or SVG)]
 function unparse_cons(prog, scaleImage=false) {
@@ -1237,5 +1227,5 @@ function text(args) {
 
 export {interp, initEnv, parsePrefix, interpPrefix,
         isRVAR, isRAPP, isRFUNCT, isRNUM, isRBOOL, isRSTRING, isRLIST, isRSYM, isRIMAGE, isRCOLOR, isRIF, isRSTRUCT,
-        RVAR_T, RAPP_T, RFUNCT_T, RNUM_T, RBOOL_T, RSTRING_T, RLIST_T, RSYM_T, RIMAGE_T, RCOLOR_T, RIF_T,
+        RVAR_T, RAPP_T, RFUNCT_T, RNUM_T, RBOOL_T, RSTRING_T, RLIST_T, RSYM_T, RIMAGE_T, RCOLOR_T, RIF_T, RSTRUCT_T,
         unparse_cons, unparse_list};
