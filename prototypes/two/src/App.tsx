@@ -499,28 +499,26 @@ class App extends React.Component<Props, State> {
         } catch (ceError) {
             return;
         }
-        // I probably don't need this many setStates in here
+
         checkExpects.map((checkExpect, ceIdx) => {
             let changed = false;
-            tables = Array.from(this.state.tables);
             tables.map((table, tabIdx) => {
                 if (!changed && (checkExpect.name === table.name || isTableNameYellow(table.name))) {
-                    tables = this.addToTable(checkExpect, tabIdx);
-                    this.setState({tables: tables});
+                    let idx = tables.indexOf(table);
+                    tables[idx] = this.addToTable(checkExpect, table);
                     changed = true;
                 }
             });
             if (!changed) {
-                tables = this.addNewTable(checkExpect);
-                this.setState({tables: tables});
+                tables = this.addNewTable(checkExpect, tables);
             }
         });
         this.setState({tables : this.calculate(this.state.globalEnv, tables)})
     }
 
-    // adds a table with the given check-expect to this.state.tables
-    addNewTable(checkExpect: CheckExpect):Array<Table> {
-        let tables = this.state.tables;
+    // returns a new table containing the given check expect
+    addNewTable(checkExpect: CheckExpect, tables: Array<Table>):Array<Table> {
+        // let tables = this.state.tables;
         let inputs:InputArray = [];
         checkExpect.inputs.forEach((input:ProgramInput, inputIdx:number) => {
             let tabInput:Input = {prog: input, key: takeKey()};
@@ -549,7 +547,7 @@ class App extends React.Component<Props, State> {
     }
     
     // adds check-expect to an existing table
-    addToTable(checkExpect: CheckExpect, tabIdx:number):Array<Table> {
+    addToTable(checkExpect: CheckExpect, tableToChange:Table):Table {
 
         function isExampleInTable(example:Example, table:Table) {
             for (let i = 0; i < table.examples.length; i++) {
@@ -569,10 +567,9 @@ class App extends React.Component<Props, State> {
             }
             return true;
         }
-
-        let tables = this.state.tables;
-        let tableToChange = tables[tabIdx];
         
+        // this is a sloppy way of doing it but, this generates the new example,
+        // which is then used to see if it is already in the given table
         let newExample:Example;
         let newInputs:InputArray = [];
         checkExpect.inputs.forEach((ceInput:ProgramInput, ceIdx:number) => {
@@ -584,7 +581,8 @@ class App extends React.Component<Props, State> {
         newExample = { inputs: newInputs, want: newWant, key: takeKey() };
 
         if (isExampleInTable(newExample, tableToChange)) {
-            return tables;
+            // return tables;
+            return tableToChange;
         }
 
         let newFormulas:FormulaArray = [];
@@ -594,6 +592,7 @@ class App extends React.Component<Props, State> {
             let newExample:Example;
             let newInputs:InputArray = [];
             
+            // generates new inputs
             checkExpect.inputs.forEach((ceInput:ProgramInput, ceIdx:number) => {
                 let newInput = { prog: { raw: ceInput.raw, validated: ceInput.validated }, key: takeKey() };
                 newInputs = [...newInputs, newInput];
@@ -601,14 +600,16 @@ class App extends React.Component<Props, State> {
 
             let newWant:ProgramInput = { raw: checkExpect.want.raw, validated: checkExpect.want.validated};
             newExample = { inputs: newInputs, want: newWant, key: takeKey() };
- 
-            if (!isValidatedProgInputNonYellow(example.inputs[eIdx].prog.validated)) {
+            // if the example has a yellow input, it will add the new example to that row of the table
+            // really this should check all input paramaters to see if none are yellow
+            if (!isValidatedProgInputNonYellow(example.inputs[0].prog.validated)) {
                 let currExamples = Array.from(tableToChange.examples);
                 currExamples[eIdx] = newExample;
                 newExamples = currExamples;
             } else {
                 newExamples = [...tableToChange.examples, newExample];
             }
+            
         });
 
         checkExpect.inputs.map((input, i) => {
@@ -637,8 +638,8 @@ class App extends React.Component<Props, State> {
             params: newParams,
             name: checkExpect.name, 
             examples: newExamples};
-        tables[tabIdx] = newTab;
-        return tables;
+        //tables[tabIdx] = newTab;
+        return newTab;
     }
 
     // event is the scroll bar
