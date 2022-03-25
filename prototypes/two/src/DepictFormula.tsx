@@ -86,6 +86,7 @@ function DepictFormula(props: Props) {
                             placeholder={'Formula'}
                             text={props.disabled ? unparse_to_string(child.prog.validated) : undefined}
                             rawText={child.prog.raw}
+                            disabled={props.disabled}
                             isValid={validProg}
                             onValid={(text) => childChange({
                                 ...child,
@@ -114,6 +115,7 @@ function DepictFormula(props: Props) {
                             placeholder='Formula'
                             text={props.disabled ? '' : undefined}
                             rawText=''
+                            disabled={props.disabled}
                             isValid={validProg}
                             onValid={(text) => childChange({
                                 prog: {raw: text, validated: parseCheck(text)},

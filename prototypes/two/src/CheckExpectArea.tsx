@@ -44,6 +44,8 @@ class CheckExpectArea extends React.Component<Props, State> {
                   dummy={false}
                   placeholder='Check-Expect Area'
                   text={this.props.text}
+                  rawText={''}
+                  disabled={false}
                   onEmpty={()=>null}
                   isValid={this.validCheckExpect}
                   onValid={this.checkExpectValid}

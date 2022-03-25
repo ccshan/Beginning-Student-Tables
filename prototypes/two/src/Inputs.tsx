@@ -31,11 +31,24 @@ function Inputs(props:Props) {
         let alteredInputs:InputArray;
         if (props.dummy) {
             alteredInputs = props.inputs.map((input) => input === oldInput ? { ...newInput, key: takeKey() } : { prog: {raw: '', validated: {yellow: "yellow"}}, key: takeKey() });
-            console.log('inputs change, altered input: ', alteredInputs);
         } else {
             alteredInputs = props.inputs.map((input) => input === oldInput ? newInput : input);
         }
         props.inputsChange(alteredInputs);
+    }
+
+    function validInputChange(newInput: Input, oldInput: Input, newRawInputString: string) {
+        try {
+            inputChange({...newInput, 
+                prog: { raw: newRawInputString, validated: parseCheck(newRawInputString) } 
+            }, 
+                oldInput);
+        } catch (e) {
+            inputChange({...newInput, 
+                prog: { raw: newRawInputString, validated: newInput.prog.validated } 
+            }, 
+            oldInput);
+        }
     }
 
     // this looks awful...
@@ -51,9 +64,10 @@ function Inputs(props:Props) {
                                 placeholder={'Input'}
                                 text={props.disabled ? '' : undefined}
                                 rawText=''
+                                disabled={props.disabled}
                                 isValid={validProg}
-                                onValid={(text:(string)) => inputChange({ prog: {raw: text, validated: (parseCheck(text) as Program)}, key: takeKey()},
-                                    input)}
+                                onValid={(text:string) => validInputChange({ prog: { raw: text, validated: { yellow: "yellow" } }, key: takeKey() }, input, text)}
+                                
                                 onEmpty={()=>null}
                             />
                         </div>
@@ -78,19 +92,16 @@ function Inputs(props:Props) {
                             <ValidatedArea
                                 dummy={props.dummy}
                                 placeholder={'Input'}
-                                text={props.disabled ? unparse_to_string(input.prog.validated) : undefined}
+                                text={props.disabled ? input.prog.raw : undefined}
                                 isValid={validProg}
-                                onValid={(text:(string)) => inputChange({
-                                    ...input,
-                                    prog: {raw: text, validated: parseCheck(text)}
-                                },
-                                    input)}
+                                onValid={(text:string) => validInputChange(input, input, text)}
                                 onEmpty={() => inputChange({
                                     ...input,
                                     prog: {raw:"", validated:{yellow:"yellow"}}
                                 },
                                     input)}
                                 rawText={input.prog.raw}
+                                disabled={props.disabled}
                             />
                         </div>
                         {error}

@@ -1,10 +1,12 @@
 import React from 'react';
 
+// the text property can be removed later on
 interface Props {
     dummy: boolean
     placeholder: string
     text: string | undefined
-    rawText?: string
+    rawText: string
+    disabled: boolean
     
     isValid: (text: undefined | string) => boolean
     onValid: (text: string) => void
@@ -12,6 +14,7 @@ interface Props {
 
 }
 
+// this is the text that is actually displayed, kept in state atm so text can be displayed even if there is parsing error
 interface State {
     text: string
 }
@@ -23,19 +26,21 @@ class ValidatedArea extends React.Component<Props, State> {
         this.textChange = this.textChange.bind(this);
     }
 
-    textChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-        if (this.props.text === undefined) {
-            const text = e.target.value;
-            this.setState({ text });
-            if (this.props.isValid(text)) {
-                this.props.onValid(text);
-            } else if (text === '' && !this.props.dummy) {
-                this.props.onEmpty();
-            }
+textChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    if (!this.props.disabled) {
+        const text = e.target.value;
+        this.setState({ text });
+        if (text === '' && !this.props.dummy) {
+            this.props.onEmpty();
+        } else {
+            this.props.onValid(text);
         }
     }
+}
 
+// if using the disabled in conjunction with the rawText, this is changed to : text = disabled ? this.state.text : rawText
     render() {
+        /*
         let text: (string | undefined);
         if (this.props.text === undefined) {
             text = this.state.text;
@@ -46,10 +51,13 @@ class ValidatedArea extends React.Component<Props, State> {
                 text = "";
             }
         }
-
-        if (this.props.rawText) {
-            text = this.props.rawText.length !== 0 ? this.props.rawText : text;
-        } 
+*/
+        let text;
+        if (!this.props.disabled && !this.props.rawText) {
+            text = this.state.text;
+        } else {
+            text = this.props.rawText.length !== 0 ? this.props.rawText : this.state.text;
+        }
 
         let className;
         if (this.props.dummy && text === '') { // empty dummy
@@ -62,7 +70,6 @@ class ValidatedArea extends React.Component<Props, State> {
             className = 'invalid_input';
         }
 
-        text = text as "string";
         let rows, newlines = text.match(/\n/g);
         if (newlines === null) {
             rows = 1;

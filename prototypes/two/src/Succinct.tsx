@@ -23,8 +23,6 @@ function Succinct(props: Props) {
   function tableChange(newTab: Table, oldTab: (Table | {})): void {
 
     const exists = isTableNonEmpty(oldTab) ? props.tables.indexOf(oldTab) !== -1 : false;
-    console.log(exists);
-
 
     let alteredTabs;
     if (exists) {

@@ -30,6 +30,7 @@ class Want extends React.Component<Props, State> {
         this.validProg = this.validProg.bind(this);
         this.handleViewClick = this.handleViewClick.bind(this);
         this.isZoomable = this.isZoomable.bind(this);
+        this.validWantChange = this.validWantChange.bind(this);
     }
     validProg(text: (string | undefined)) {
         try {
@@ -38,6 +39,16 @@ class Want extends React.Component<Props, State> {
             return false;
         }
         return true;
+    }
+
+    // this should function as the isValid, just one level higher so that rawText can always be passed down
+    // onValid={(text:(string)) => this.props.wantChange({raw: text, validated: parseCheck(text)})}
+    validWantChange(newWantString: string) {
+        try {
+            this.props.wantChange({raw: newWantString, validated: parseCheck(newWantString)});
+        } catch (e) {
+            this.props.wantChange({raw: newWantString, validated: this.props.want.validated});
+        }
     }
 
     // Program -> State
@@ -104,8 +115,9 @@ class Want extends React.Component<Props, State> {
                             text={this.props.disabled ? this.props.dummy ? '' : unparse_to_string(this.props.want.validated)
                                 : undefined}
                             rawText={this.props.want.raw}
+                            disabled={this.props.disabled}
                             isValid={this.validProg}
-                            onValid={(text:(string)) => this.props.wantChange({raw: text, validated: parseCheck(text)})}
+                            onValid={(text:(string)) => this.validWantChange(text)}
                             onEmpty={() => this.props.wantChange({raw: '', validated: {yellow: 'yellow'}})}
                         />
                     </div>

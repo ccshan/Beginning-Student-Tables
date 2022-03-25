@@ -6,7 +6,7 @@ import type { Yellow } from './global-definitions';
 interface Props {
     dummy: boolean
     text: string | undefined | Yellow
-    rawText: string
+    rawText?: string
     placeholder: string
     isValid: (text: Yellow | string) => boolean
     onValid: (text: Yellow | string) => void
@@ -23,7 +23,7 @@ class ValidatedInput extends React.Component<Props, State> {
         this.state = { text: '' };
         this.textChange = this.textChange.bind(this);
     }
-
+/*
     textChange(e: React.ChangeEvent<HTMLInputElement>) {
         if (this.props.text === undefined) {
             const text = e.target.value;
@@ -32,6 +32,19 @@ class ValidatedInput extends React.Component<Props, State> {
                 this.props.onValid(text);
             } else if (text === '' && !this.props.dummy) {
                 this.props.onEmpty();
+            }
+        }
+    }
+*/
+
+    textChange(e: React.ChangeEvent<HTMLInputElement>) {
+        if (this.props.text === undefined) {
+            const text = e.target.value;
+            this.setState({ text });
+            if (text === '' && !this.props.dummy) {
+                this.props.onEmpty();
+            } else {
+                this.props.onValid(text);
             }
         }
     }
@@ -49,9 +62,10 @@ class ValidatedInput extends React.Component<Props, State> {
             }
         }
 
+        
         if (this.props.rawText) {
             text = this.props.rawText.length !== 0 ? this.props.rawText : text;
-        } 
+        }
 
         let className;
         if (this.props.dummy && text === '') { // empty dummy

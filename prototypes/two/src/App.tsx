@@ -280,6 +280,8 @@ class App extends React.Component<Props, State> {
     }
 
     calculate(env:Environment, program:Array<Table>):Array<Table> {
+        // error array here
+        // let errorArray:any = [];
         function makeLookup(table:Table) {
             function lookup(args:ProgramArray) {
                 if (args.length !== table.params.length) {
@@ -311,7 +313,9 @@ class App extends React.Component<Props, State> {
                             // 3. empty array at top of calculate, put react fragment there
                             //      append react frgament to array
                             e.message = "error";//<React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>;
+                            // errorArray.push(<React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>);
                             throw e;
+                            //return <React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>;
                         } else {
                             // Note: don't need to catch exception here because it will be caught in calcFormula
                             return interp(example.want.validated, env);
@@ -378,7 +382,7 @@ class App extends React.Component<Props, State> {
 
                 if (allBools(outputs) || (isBooleanFormula(formula) && formula.thenChildren.length !== 0)) {
                     function maybeSpecial(example:Example, output:Output):Example {
-                        if (!isOutputNonYellow(output) && isYellowProgramGray(output) || (isOutputNonYellow(output) && isValidatedProgInputNonYellow(output.validated) && output.validated.value === false)) {
+                        if ((!isOutputNonYellow(output) && isYellowProgramGray(output)) || ((isOutputNonYellow(output) && isValidatedProgInputNonYellow(output.validated) && output.validated.value === false))) {
                             return {inputs: [], want: {raw:'', validated: gray}, key: takeKey()};
                         }
                             // used to be: typeof outputs.value !== 'boolean'

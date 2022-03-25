@@ -64,6 +64,27 @@ function SuccinctHead(props: Props) {
         props.formulasChange(alteredForms);
     }
 
+    
+    // if the the formula is valid, pass formula up with the string's parsed validated value,
+    // else, pass the formula up with the previous validated value
+    // this ensures that the rawString will be passed back down, while handling erros
+    function validFormulaChange(newFormula: Formula, oldFormula: ( {} | Formula), newFormulaString: string) {
+        try {
+            formulaChange({
+                ...newFormula,
+                prog: {raw: newFormulaString, validated: parseCheck(newFormulaString)}
+            },
+                oldFormula)
+        } catch (e) {
+            formulaChange({
+                ...newFormula,
+                prog: {raw: newFormulaString, validated: newFormula.prog.validated}
+            },
+                oldFormula)
+        }
+    }
+    
+
     // Formula -> Number -> Number
     // gives the maximum depth of a Formula, second parameter is an accumulator
     function maxDepth(formula: Formula, curMax: number): number {
@@ -98,6 +119,7 @@ function SuccinctHead(props: Props) {
     const abyss = props.formulas.reduce((acc, formula) => Math.max(acc, maxDepth(formula, 0)), 0);
     const numParams = props.params.length;
 
+    // the text property can be removed later on in this
     const reals = props.formulas.map((formula) => (
         <th key={formula.key} colSpan={countWidth(formula)} >
             <div className='flex_horiz'>
@@ -106,12 +128,9 @@ function SuccinctHead(props: Props) {
                     dummy={false}
                     text={props.disabled ? unparse_to_string(formula.prog.validated) : undefined}
                     rawText={formula.prog.raw}
+                    disabled={props.disabled}
                     isValid={validProg}
-                    onValid={(text) => formulaChange({
-                        ...formula,
-                        prog: {raw: text, validated: parseCheck(text)}
-                    },
-                        formula)}
+                    onValid={(text) => validFormulaChange(formula, formula, text)}
                     onEmpty={() => formulaChange({
                         ...formula,
                         prog: { raw: '', validated: { yellow: 'yellow' } }
@@ -134,13 +153,14 @@ function SuccinctHead(props: Props) {
                     placeholder='Formula'
                     text={props.disabled ? '' : undefined}
                     rawText=''
+                    disabled={props.disabled}
                     isValid={validProg}
-                    onValid={(text) => formulaChange({
-                        prog: {raw: text, validated: parseCheck(text)},
+                    onValid={(text) => validFormulaChange({
+                        prog: { raw: text, validated: { yellow: 'yellow' }},
                         outputs: props.examples.map((_) => ({ raw: '', validated: { yellow: 'yellow'} })),
-                            key: takeKey()
-                    },
-                { })}
+                                                key: takeKey()
+                                            },
+                                            { }, text)}
                 onEmpty={()=>null}
                 />
             </div>

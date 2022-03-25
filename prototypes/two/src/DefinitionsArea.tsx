@@ -45,6 +45,8 @@ class DefinitionsArea extends React.Component<Props, State> {
                         dummy={false}
                         placeholder='Definitions Area'
                         text={this.props.text}
+                        rawText={this.props.text as string}
+                        disabled={false}
                         isValid={this.validPrefix}
                         onValid={this.prefixChange}
                         onEmpty={()=>{return null}}
