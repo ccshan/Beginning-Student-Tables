@@ -16,7 +16,6 @@ interface Parameter {
     key: number
 }
 
-
 type NameInput = string | Yellow | undefined ;
 
 type ExampleArray = Array<Example>;
@@ -37,6 +36,7 @@ interface Input {
 interface ProgramInput {
     raw: string
     validated: ValidatedProgInput
+    // add boolean whether raw is actually validated
 }
 
 interface BooleanFormula {
@@ -54,7 +54,7 @@ interface NonBooleanFormula {
 
 type Formula = BooleanFormula | NonBooleanFormula
 
-type Output = ProgramInput | Yellow;
+type Output = Program | Yellow;
 
 type OutputArray = Array<Output>;
 
@@ -79,6 +79,8 @@ interface Define {
     binding: Program
     type: 'define'
 }
+
+// add type for err msg
 
 type PrefixExpression = CheckExpect | DefStruct | Define;
 
@@ -115,8 +117,8 @@ export function isFormulaNonEmpty(formula: ({} | Formula)) : formula is Formula 
     return (formula as Formula).key !== undefined;
 }
 
-export function isOutputNonYellow(output: Output) : output is ProgramInput {
-    return (output as ProgramInput).raw !== undefined;
+export function isOutputNonYellow(output: Output) : output is Program {
+    return (output as Program).type !== undefined;
 }
 
 export function isYellowProgramGray(prog: Yellow):boolean {

@@ -204,7 +204,7 @@ class App extends React.Component<Props, State> {
         let globalEnv:Environment = initEnv;
         let tables:Array<Table> = [{
             examples: [{ inputs: [{ prog: { raw: '', validated: { yellow: 'yellow' }}, key: takeKey() }], want: { raw: '', validated: { yellow: 'yellow' }}, key: takeKey() }],
-            formulas: [{ prog: { raw: '', validated: { yellow: 'yellow' }}, outputs: [{ raw: '', validated: { yellow: 'yellow' }}], key: takeKey() }],
+            formulas: [{ prog: { raw: '', validated: { yellow: 'yellow' }}, outputs: [{ yellow: 'yellow' }], key: takeKey() }],
             params: [{ name: {yellow: 'yellow'}, key: takeKey() }],
             name: {yellow : 'yellow' },
             signature: {yellow: 'yellow'},
@@ -313,7 +313,7 @@ class App extends React.Component<Props, State> {
                             // 3. empty array at top of calculate, put react fragment there
                             //      append react frgament to array
                             e.message = "error";//<React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>;
-                            // errorArray.push(<React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>);
+                            //errorArray.push(<React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>);
                             throw e;
                             //return <React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>;
                         } else {
@@ -347,12 +347,12 @@ class App extends React.Component<Props, State> {
                 let outputs:OutputArray = examples.map((example) => {
 
                     if (!isValidatedProgInputNonYellow(example.want.validated) && isYellowProgramGray(example.want.validated)) {
-                        return {raw: "", validated: gray};
+                        return gray;
                     } if (example.want.validated === pink) {
-                        return {raw: "", validated: pink};
+                        return pink;
                     } else if (!example.inputs.every((input) => isValidatedProgInputNonYellow(input.prog.validated)) || !isValidatedProgInputNonYellow(formula.prog.validated)) {
                         // if any of the inputs or the formula isn't initialized, return yellow
-                        return {raw: "", validated: yellow};
+                        return yellow;
                     }
 
                     let error = false;
@@ -363,7 +363,7 @@ class App extends React.Component<Props, State> {
                     }
 
                     if (example.want.validated === pink || error) {
-                        return {raw: "", validated: pink};
+                        return pink;
                     }
 
                     let localEnv = table.params.map((param, i) => ({ name: param.name, binding: interp(example.inputs[i].prog.validated, tableEnv) }));
@@ -372,7 +372,7 @@ class App extends React.Component<Props, State> {
                     let output:Output;
                     try {
                         let outputProg:Program = interp(formula.prog.validated, env);
-                        output = {raw: unparse(outputProg)[0], validated: outputProg};
+                        output = outputProg ;
                     } catch (e) {
                         output = e as any; /// new variable messgae to user 
                     }
@@ -382,11 +382,11 @@ class App extends React.Component<Props, State> {
 
                 if (allBools(outputs) || (isBooleanFormula(formula) && formula.thenChildren.length !== 0)) {
                     function maybeSpecial(example:Example, output:Output):Example {
-                        if ((!isOutputNonYellow(output) && isYellowProgramGray(output)) || ((isOutputNonYellow(output) && isValidatedProgInputNonYellow(output.validated) && output.validated.value === false))) {
+                        if ((!isOutputNonYellow(output) && isYellowProgramGray(output)) || ((isOutputNonYellow(output) && isRBOOL(output) && output.value === false))) {
                             return {inputs: [], want: {raw:'', validated: gray}, key: takeKey()};
                         }
                             // used to be: typeof outputs.value !== 'boolean'
-                        else if (isOutputNonYellow(output) && !isRBOOL(output.validated))
+                        else if (isOutputNonYellow(output) && !isRBOOL(output))
                             return {inputs: [], want: {raw: '', validated: pink}, key: takeKey()};
                         else
                             return example;
@@ -477,7 +477,7 @@ class App extends React.Component<Props, State> {
         if (dummyMoved) {
             const currentFormulas = tableToChange.formulas;
             // adds a {yellow:'yellow'} to every formula's outputs
-            const newFormulas:FormulaArray = currentFormulas.map((_, i) => ({ ...currentFormulas[i], outputs: [...currentFormulas[i].outputs, {raw: '', validated: { yellow: 'yellow' }}] }));
+            const newFormulas:FormulaArray = currentFormulas.map((_, i) => ({ ...currentFormulas[i], outputs: [...currentFormulas[i].outputs, { yellow: 'yellow' }] }));
             const changedTable = { ...tableToChange, examples: newExampleOrder, formulas: newFormulas }
             currentTables[tableIndex] = changedTable;
             this.setState({
@@ -540,7 +540,7 @@ class App extends React.Component<Props, State> {
 
         let newTab:Table = {name: checkExpect.name, examples: examples, 
                             formulas: [{prog: {raw: "", validated: {yellow: "yellow"}}, 
-                                        outputs: [{raw: "", validated: {yellow: "yellow"}}], 
+                                        outputs: [{yellow: "yellow" }], 
                                         key: takeKey()}],
                             params: newParams,
                             signature: {yellow: 'yellow'},
@@ -628,7 +628,7 @@ class App extends React.Component<Props, State> {
             let newOutputs:OutputArray = formula.outputs;
             newExamples.map((example, i) => {
                 if (i >= formula.outputs.length) {
-                    let newOutput:Output = { raw: "", validated: { yellow: "yellow" } };
+                    let newOutput:Output = { yellow: "yellow" };
                     newOutputs = [...newOutputs, newOutput];
                 }
             });

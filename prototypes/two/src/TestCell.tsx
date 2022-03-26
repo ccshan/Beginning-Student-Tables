@@ -2,7 +2,7 @@ import Octicon, { Check } from "@primer/octicons-react";
 import React from "react";
 import { deepEquals, unparse } from "./App";
 import { ErrorMessage } from "./ErrorMessage";
-import { Environment } from "./global-definitions";
+import { Environment, Program } from "./global-definitions";
 import { yellow } from "./header";
 import { height, width } from "./image";
 import { isOutputNonYellow, isValidatedProgInputNonYellow, isYellowProgramGray, Output, ProgramInput } from "./input-definitions";
@@ -30,7 +30,7 @@ class TestCell extends React.Component<Props, State> {
     }
     // paint could be called with an extra param that specifies what type of render should be returned
 
-    // Program ->
+    // Output ->
     handleViewClick(prog:Output) {
         // check if program returns an image
         if (!isOutputNonYellow(prog)) return false;
@@ -41,12 +41,12 @@ class TestCell extends React.Component<Props, State> {
         }
     }
 
-    // Program -> Boolean
+    // Output -> Boolean
     // determines whether the image should be zoomable
-    isZoomable(prog:ProgramInput) {
-        if (isValidatedProgInputNonYellow(prog.validated)) {
+    isZoomable(prog:Program) {
+        if (isOutputNonYellow(prog)) {
             // maybe export Types not as type so we can have Types.RIMAGE_T
-            return prog.validated.type === RIMAGE_T ? (width(prog.validated.value) > 250 || height(prog.validated.value) > 250) : false;
+            return prog.type === RIMAGE_T ? (width(prog.value) > 250 || height(prog.value) > 250) : false;
         }
         return false;
     }
@@ -69,8 +69,6 @@ class TestCell extends React.Component<Props, State> {
             );
         }
 
-        // these likely don't work because it is comparing two objects and junk w that happen :p
-        // may work now^^
         if (!isOutputNonYellow(output) && "pink" in output) {
             return (
                 <td className={'pink'}>
@@ -78,7 +76,7 @@ class TestCell extends React.Component<Props, State> {
             );
         }
 
-        if ((!isOutputNonYellow(output) && "yellow" in output) || (isOutputNonYellow(output) && output.raw === "")) {
+        if (!isOutputNonYellow(output) && "yellow" in output) {
             return (
                 <td className={'yellow'}>
                 </td>
@@ -96,10 +94,10 @@ class TestCell extends React.Component<Props, State> {
             want = {raw: '', validated: yellow};
         }
 
-        if (isValidatedProgInputNonYellow(want.validated) && isOutputNonYellow(output) && isValidatedProgInputNonYellow(output.validated) && deepEquals(output.validated, want.validated)) {
+        if (isValidatedProgInputNonYellow(want.validated) && isOutputNonYellow(output) && deepEquals(output, want.validated)) {
             return (
                 <td className='output' onClick={() => this.handleViewClick(output)}>
-                    {unparse(output.validated, true)}
+                    {unparse(output, true)}
                     <div title={"Yay! It's right!"} className="check">
                         <Octicon
                             icon={Check} size="small" verticalAlign="middle" 
@@ -111,12 +109,12 @@ class TestCell extends React.Component<Props, State> {
                             open
                             onClick={() => this.handleViewClick(output)}
                         >
-                            {unparse(output.validated)}
+                            {unparse(output)}
                         </dialog>
                     )}
                 </td>
             )
-        } else if (isOutputNonYellow(output) && isValidatedProgInputNonYellow(output.validated)){
+        } else if (isOutputNonYellow(output) && isValidatedProgInputNonYellow(output)){
             return (
                 <td className='output' onClick={() => this.handleViewClick(output)}>
                     {this.state.isOpen && (
@@ -125,10 +123,10 @@ class TestCell extends React.Component<Props, State> {
                             open
                             onClick={() => this.handleViewClick(output)}
                         >
-                            {unparse(output.validated)}
+                            {unparse(output)}
                         </dialog>
                     )}
-                    {unparse(output.validated, true)}
+                    {unparse(output, true)}
                 </td>
             );
         }

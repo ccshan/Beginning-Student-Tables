@@ -14,7 +14,6 @@ interface Props {
 
 }
 
-// this is the text that is actually displayed, kept in state atm so text can be displayed even if there is parsing error
 interface State {
     text: string
 }
@@ -38,20 +37,7 @@ textChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     }
 }
 
-// if using the disabled in conjunction with the rawText, this is changed to : text = disabled ? this.state.text : rawText
     render() {
-        /*
-        let text: (string | undefined);
-        if (this.props.text === undefined) {
-            text = this.state.text;
-        } else {
-            if (typeof this.props.text === "string") {
-                text = this.props.text;
-            } else {
-                text = "";
-            }
-        }
-*/
         let text;
         if (!this.props.disabled && !this.props.rawText) {
             text = this.state.text;

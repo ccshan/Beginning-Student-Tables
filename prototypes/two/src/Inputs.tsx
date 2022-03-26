@@ -1,13 +1,11 @@
 import React from "react";
-import { takeKey, unparse_to_string } from "./App";
+import { takeKey } from "./App";
 import { ErrorMessage } from "./ErrorMessage";
 import { Environment, Program, Yellow } from "./global-definitions";
-//import { yellow } from "./header";
-import { Input, InputArray, isValidatedProgInputNonYellow, ProgramInput } from "./input-definitions";
+import { Input, InputArray, isValidatedProgInputNonYellow } from "./input-definitions";
 import { interp, parseCheck } from "./interpreter";
 import { ValidatedArea } from "./ValidatedArea";
 
-// const yellow = {raw: '', validated: {yellow: 'yellow'}};
 interface Props {
     disabled : boolean
     globalEnv : Environment

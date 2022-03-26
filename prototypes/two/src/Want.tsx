@@ -5,7 +5,6 @@ import { Environment, Program, Yellow } from "./global-definitions";
 import { height, width } from "./image";
 import { isValidatedProgInputNonYellow, ProgramInput } from "./input-definitions";
 import { unparse_cons, interp, parseCheck, RIMAGE_T } from "./interpreter";
-import { ValidatedProgInput } from "./input-definitions";
 import { ValidatedArea } from "./ValidatedArea";
 
 interface Props {
@@ -41,8 +40,7 @@ class Want extends React.Component<Props, State> {
         return true;
     }
 
-    // this should function as the isValid, just one level higher so that rawText can always be passed down
-    // onValid={(text:(string)) => this.props.wantChange({raw: text, validated: parseCheck(text)})}
+    // if the newWantString parses with error, pass up with the validated of the last correct
     validWantChange(newWantString: string) {
         try {
             this.props.wantChange({raw: newWantString, validated: parseCheck(newWantString)});

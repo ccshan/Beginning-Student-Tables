@@ -157,7 +157,7 @@ function SuccinctHead(props: Props) {
                     isValid={validProg}
                     onValid={(text) => validFormulaChange({
                         prog: { raw: text, validated: { yellow: 'yellow' }},
-                        outputs: props.examples.map((_) => ({ raw: '', validated: { yellow: 'yellow'} })),
+                        outputs: props.examples.map((_) => ({ yellow: 'yellow' })),
                                                 key: takeKey()
                                             },
                                             { }, text)}

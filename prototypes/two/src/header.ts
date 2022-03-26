@@ -24,5 +24,5 @@ export function allBools(outputs:OutputArray){
         return false;
     }
 
-    return outputs.every((output) =>  (!isOutputNonYellow(output) && isYellowProgramGray(output)) || (isOutputNonYellow(output) && isRBOOL(output.validated)));
+    return outputs.every((output) =>  (!isOutputNonYellow(output) && isYellowProgramGray(output)) || (isOutputNonYellow(output) && isRBOOL(output)));
 }

@@ -8,12 +8,12 @@ interface Props {
 
 }
 function DummyCell(props:Props) {
-    if ((!isOutputNonYellow(props.parentOutput) && isYellowProgramGray(props.parentOutput)) || (isOutputNonYellow(props.parentOutput) && isRBOOL(props.parentOutput.validated) && props.parentOutput.validated.value === false)) {
+    if ((!isOutputNonYellow(props.parentOutput) && isYellowProgramGray(props.parentOutput)) || (isOutputNonYellow(props.parentOutput) && isRBOOL(props.parentOutput) && props.parentOutput.value === false)) {
         return (
             <td className={'gray'}>
             </td>
         );
-    } else if (props.parentOutput === pink || (isOutputNonYellow(props.parentOutput) && !isRBOOL(props.parentOutput.validated))) {
+    } else if (props.parentOutput === pink || (isOutputNonYellow(props.parentOutput) && !isRBOOL(props.parentOutput))) {
         return (
             <td className={'pink'}>
             </td>

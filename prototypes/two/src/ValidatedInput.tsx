@@ -23,20 +23,7 @@ class ValidatedInput extends React.Component<Props, State> {
         this.state = { text: '' };
         this.textChange = this.textChange.bind(this);
     }
-/*
-    textChange(e: React.ChangeEvent<HTMLInputElement>) {
-        if (this.props.text === undefined) {
-            const text = e.target.value;
-            this.setState({ text });
-            if (this.props.isValid(text)) {
-                this.props.onValid(text);
-            } else if (text === '' && !this.props.dummy) {
-                this.props.onEmpty();
-            }
-        }
-    }
-*/
-
+    
     textChange(e: React.ChangeEvent<HTMLInputElement>) {
         if (this.props.text === undefined) {
             const text = e.target.value;

@@ -14,7 +14,6 @@ interface Props {
   tableIndex?: number
 
   tableChange: (table: Table) => void
-  // change this
   handleOnDrag: (exampleArr: ExampleArray, tabIndex: number, newExample?: boolean) => void
 
 }

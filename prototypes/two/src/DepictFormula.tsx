@@ -48,6 +48,23 @@ function DepictFormula(props: Props) {
         props.formulaChange({ ...props.formula, thenChildren: children });
     }
 
+    // if the rawFormulaString doesn't parse, pass up the formula with the previous validated
+    function validChildChange(newChild: Formula, modChild: ({} | Formula), newRawFormulaString:string) {
+        try {
+            childChange({
+                ...newChild,
+                prog: { raw: newRawFormulaString, validated: parseCheck(newRawFormulaString) }
+            },
+            newChild)
+        } catch (e) {
+            childChange({
+                ...newChild,
+                prog: { raw: newRawFormulaString, validated: newChild.prog.validated }
+            },
+            modChild)
+        }
+    }
+
     function countWidth(formula: Formula): number {
         if (!isBooleanFormula(formula)) {
             return 1;
@@ -88,11 +105,7 @@ function DepictFormula(props: Props) {
                             rawText={child.prog.raw}
                             disabled={props.disabled}
                             isValid={validProg}
-                            onValid={(text) => childChange({
-                                ...child,
-                                prog: {raw: text, validated: parseCheck(text)}
-                            },
-                                child)}
+                            onValid={(text) => validChildChange(child, child, text)}
                             onEmpty={() => childChange({
                                 ...child,
                                 prog: { raw: '', validated: {yellow: 'yellow' }}
@@ -117,12 +130,11 @@ function DepictFormula(props: Props) {
                             rawText=''
                             disabled={props.disabled}
                             isValid={validProg}
-                            onValid={(text) => childChange({
-                                prog: {raw: text, validated: parseCheck(text)},
+                            onValid={(text) => validChildChange({
+                                prog: {raw: text, validated: {yellow: 'yellow'}},
                                 outputs: Array(props.numExamples).fill({raw: '', validated: {yellow: 'yellow'}}),
                                 key: takeKey()
-                            },
-                                {})}
+                            }, {}, text)}
                             onEmpty={()=>null}
                         />
                     </div>

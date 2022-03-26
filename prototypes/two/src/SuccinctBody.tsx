@@ -57,7 +57,7 @@ function SuccinctBody(props: Props) {
         // Formula -> Formula
         // adds an init output to the given formula and all of its children (if it has any) so stuff works
         function addAnotherOutputToFormula(formula: Formula): Formula {
-            let outputs:OutputArray = [...formula.outputs, { raw: '', validated: { yellow: 'yellow' } }];
+            let outputs:OutputArray = [...formula.outputs, { yellow: 'yellow' }];
 
             if (isBooleanFormula(formula)) {
                 const thenChildren = formula.thenChildren.map(addAnotherOutputToFormula);
