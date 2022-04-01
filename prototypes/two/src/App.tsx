@@ -18,8 +18,9 @@ import { Succinct } from './Succinct';
 import { BSLArea } from './BSLArea';
 import { isSnapshotArray, Snapshot } from './recording-definitions';
 import { Environment, isRBOOL, Program, ProgramArray } from './global-definitions';
-import { CheckExpectArea } from './CheckExpectArea';
+import { CheckExpectArea } from './components/CheckExpectArea';
 import { RecursionReferenceError } from './RecursionReferenceError';
+import { Inputs } from './Inputs.js';
 
 /*****************************
   Universal Constants I Want
@@ -601,22 +602,25 @@ class App extends React.Component<Props, State> {
         newExample = { inputs: newInputs, want: newWant, key: takeKey() };
 
         if (isExampleInTable(newExample, tableToChange)) {
-            // return tables;
             return tableToChange;
         }
 
         let newFormulas:FormulaArray = [];
         let newParams:ParameterArray = tableToChange.params;
         let newExamples:ExampleArray = [];
+        let newInputsLength:number; // to be used to match all exmaple inputs to have the same length
+
         tableToChange.examples.forEach((example, eIdx) => {
             let newExample:Example;
             let newInputs:InputArray = [];
             
             // generates new inputs
             checkExpect.inputs.forEach((ceInput:ProgramInput, ceIdx:number) => {
-                let newInput = { prog: { raw: ceInput.raw, validated: ceInput.validated }, key: takeKey() };
+                let newInput:Input = { prog: { raw: ceInput.raw, validated: ceInput.validated }, key: takeKey() };
                 newInputs = [...newInputs, newInput];
             });
+
+            newInputsLength = newInputs.length;
 
             let newWant:ProgramInput = { raw: checkExpect.want.raw, validated: checkExpect.want.validated};
             newExample = { inputs: newInputs, want: newWant, key: takeKey() };
@@ -632,6 +636,20 @@ class App extends React.Component<Props, State> {
             
         });
 
+        // for every example's inputs, if the amount of inputs for that example is less than the new most inputs length,
+        // fill the inputs array with empty inputs to match the new length
+        // this is sloppy way of doing it since it mutates the table directly, but it works
+        tableToChange.examples.map((example, i) => {
+            if (example.inputs.length < newInputsLength) {
+                checkExpect.inputs.map((input, i:number) => {
+                    if (i >= example.inputs.length) {
+                        example.inputs = [...example.inputs, { prog: { raw: "", validated: { yellow: "yellow"} }, key: takeKey() }];
+                    }
+                });
+            }
+        });
+
+        // add new paramters for each new input field
         checkExpect.inputs.map((input, i) => {
             if (i >= newParams.length) {
                 let newParam:Parameter = { name: {yellow: "yellow"}, key: takeKey() };
@@ -639,6 +657,7 @@ class App extends React.Component<Props, State> {
             }
         });
 
+        // matches the number of formula outputs to the new number of examples in the table
         let formulasArr = tableToChange.formulas;
         tableToChange.formulas.map((formula, i) => {
             let newOutputs:OutputArray = formula.outputs;
@@ -658,7 +677,7 @@ class App extends React.Component<Props, State> {
             params: newParams,
             name: checkExpect.name, 
             examples: newExamples};
-        //tables[tabIdx] = newTab;
+
         return newTab;
     }
 

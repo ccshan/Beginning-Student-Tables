@@ -29,7 +29,6 @@ function Inputs(props:Props) {
         let alteredInputs:InputArray;
         if (props.dummy) {
             alteredInputs = props.inputs.map((input) => input === oldInput ? { ...newInput, key: takeKey() } : { prog: {raw: "", validated: {yellow: "yellow"}}, key: takeKey() });
-            console.log('called on dummy: ', alteredInputs);
         } else {
             alteredInputs = props.inputs.map((input) => input === oldInput ? newInput : input);
         }
