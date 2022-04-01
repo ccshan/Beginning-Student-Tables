@@ -68,7 +68,7 @@ function SuccinctHead(props: Props) {
     // if the the formula is valid, pass formula up with the string's parsed validated value,
     // else, pass the formula up with the previous validated value
     // this ensures that the rawString will be passed back down, while handling erros
-    function validFormulaChange(newFormula: Formula, oldFormula: ( {} | Formula), newFormulaString: string) {
+    function validFormulaChange(newFormula: Formula, oldFormula: ({} | Formula), newFormulaString: string) {
         try {
             formulaChange({
                 ...newFormula,

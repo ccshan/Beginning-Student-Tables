@@ -2,18 +2,6 @@ import { NameInput, ValidatedProgInput } from "./input-definitions";
 import { RBOOL_T } from "./interpreter";
 import { Image } from "./image-definitions";
 
-/*
-interface Yellow {
-    yellow: 'yellow' | "green" | "pink" | ""
-}
-
-enum Yellow {
-    yellow = 'yellow',
-    gray = 'gray',
-    pink = 'pink'
-}
-*/
-
 enum CellColors {
     yellow = "yellow",
     gray = "gray",

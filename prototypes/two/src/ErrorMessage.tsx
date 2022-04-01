@@ -1,13 +1,18 @@
 import React from 'react';
 import Octicon, { Alert } from '@primer/octicons-react';
+import { RecursionReferenceError } from './RecursionReferenceError';
 
 interface Props {
     error: Error | boolean
 }
 
-// quick fix to static error message because i have no idea how else it is supposed to display if the error is boolean
 // It's an error message (oh no!)
-export function ErrorMessage(props: Props) {
+export const ErrorMessage:React.FC<Props> = (props) => {
+    
+    // if the error is a RecursinoReferenceError, the JSX element of it is returned
+    if (typeof props.error !== "boolean" && props.error instanceof RecursionReferenceError) {
+        return props.error.displayElem;
+    }
     return (
         <div>
             {typeof props.error === "boolean" ? "ERROR" : props.error.message}

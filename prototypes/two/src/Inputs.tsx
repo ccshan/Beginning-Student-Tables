@@ -28,7 +28,8 @@ function Inputs(props:Props) {
     function inputChange(newInput:Input, oldInput:Input) {
         let alteredInputs:InputArray;
         if (props.dummy) {
-            alteredInputs = props.inputs.map((input) => input === oldInput ? { ...newInput, key: takeKey() } : { prog: {raw: '', validated: {yellow: "yellow"}}, key: takeKey() });
+            alteredInputs = props.inputs.map((input) => input === oldInput ? { ...newInput, key: takeKey() } : { prog: {raw: "", validated: {yellow: "yellow"}}, key: takeKey() });
+            console.log('called on dummy: ', alteredInputs);
         } else {
             alteredInputs = props.inputs.map((input) => input === oldInput ? newInput : input);
         }
@@ -37,12 +38,14 @@ function Inputs(props:Props) {
 
     function validInputChange(newInput: Input, oldInput: Input, newRawInputString: string) {
         try {
-            inputChange({...newInput, 
+            inputChange({
+                ...newInput, 
                 prog: { raw: newRawInputString, validated: parseCheck(newRawInputString) } 
             }, 
                 oldInput);
         } catch (e) {
-            inputChange({...newInput, 
+            inputChange({
+                ...newInput, 
                 prog: { raw: newRawInputString, validated: newInput.prog.validated } 
             }, 
             oldInput);
