@@ -13,14 +13,14 @@ import './App.css';
 // Type Imports
 import { CheckExpect, Example, ExampleArray, Formula, FormulaArray, Input, InputArray, isBooleanFormula, isValidatedProgInputNonYellow, isTableNameYellow, Parameter, ProgramInput, Table, ValidatedProgInput, OutputArray, Output, isOutputNonYellow, isParamNonYellow, isYellowProgramGray, ParameterArray } from './input-definitions';
 import { Image } from "./image-definitions";
-import { DefinitionsArea } from './DefinitionsArea';
-import { Succinct } from './Succinct';
-import { BSLArea } from './BSLArea';
+import { DefinitionsArea } from './components/DefinitionsArea';
+import { Succinct } from './components/Table/Succinct';
+import { BSLArea } from './components/BSLArea';
 import { isSnapshotArray, Snapshot } from './recording-definitions';
 import { Environment, isRBOOL, Program, ProgramArray } from './global-definitions';
 import { CheckExpectArea } from './components/CheckExpectArea';
-import { RecursionReferenceError } from './RecursionReferenceError';
-import { Inputs } from './Inputs.js';
+import { InterpreterError } from './InterperterError';
+import { Inputs } from './components/Table/Inputs.js';
 
 /*****************************
   Universal Constants I Want
@@ -183,6 +183,9 @@ function deepEquals(proga: Program, progb: Program): boolean {
     return proga!.value === progb!.value;
 }
 
+// TODO: Add image component to render images in outputs
+
+
 interface Props {
     snapshots : Snapshot
 }
@@ -308,21 +311,8 @@ class App extends React.Component<Props, State> {
                         return bool;
                     })) {
                         if (!isValidatedProgInputNonYellow(example.want.validated)) {
-                            ///// Please excuse all the comments here, it is a work in progress T-T
-                            // let e = new ReferenceError(); // should be interepreter error
-                            // options:
-                            // 1. change message to something fixed
-                            // 2. convert unparse's [string, svg] to all to string
-                            // 3. empty array at top of calculate, put react fragment there
-                            //      append react frgament to array
-                            // e.message = "error";//<React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>;
-                            // errorArray.push(<React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>);
-                            // throw e;
-                            // return <React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>;
-                            
-                            
                             let displayElem = <React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>;
-                            let e = new RecursionReferenceError("error", displayElem);
+                            let e = new InterpreterError("error", displayElem);
                             throw e;
                         } else {
                             // Note: don't need to catch exception here because it will be caught in calcFormula
@@ -334,19 +324,8 @@ class App extends React.Component<Props, State> {
                 }, undefined);
 
                 if (expr === undefined) {
-                    // it's like a reference error in the super meta table language
-                    // let e = new ReferenceError();
-                    // shoehorn a non-string into the message field
-                    // let errMsg = [];
-                    // errMsg.push(args.flatMap(a => [' ', ...unparse(a)]))
-                    // const initStr = isTableNameYellow(table.name) ? "" : "(" + table.name;
-                    // e.message = errMsg.reduce((prevStr, currStr) => prevStr + currStr, initStr) + " is not an example";    
-                    // e.message = isTableNameYellow(table.name) ? errMsg.join(" ") : "(" + table.name + " " + errMsg.join('') + " is not an example";
-                    // e.message = table.name + ' has a missing example';//<React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) is not an example</React.Fragment>;
-                    
-                    
                     let displayElem:JSX.Element = <React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) is not an example</React.Fragment>;
-                    let e = new RecursionReferenceError("error", displayElem);
+                    let e = new InterpreterError("error", displayElem);
                     throw e;
                 }
 

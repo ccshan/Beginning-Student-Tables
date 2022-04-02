@@ -5,6 +5,7 @@ import {makeCircle, makeRectangle, makeEquiTriangle,
         makePlace, emptyScene, makeColor,
         paint, makeText, makeRotate} from './image.js';
 import { parse, parseQ, parsePrefix } from './parser.js';
+import { RecursionReferenceError } from './InterperterError';
 
 /****************
    Interpreter
@@ -408,10 +409,10 @@ function typeCheck(prog, types) {
 
     if (!types.includes(prog.type)) {
         let typesString = types.map(getType).reduce((acc, type) => acc + ` or a ${type}`);
-        let e = new TypeError();
         // shoehorn a non-string into the message field
         // TODO: somehow make this use the approproate unparser maybe
-        e.message = <React.Fragment>{[unparse_cons(prog), " ain't a " + typesString]}</React.Fragment>;
+        let displayElem = <React.Fragment>{[unparse_cons(prog), " ain't a " + typesString]}</React.Fragment>;
+        let e = new RecursionReferenceError("type error", displayElem);
         throw e;
     }
 }
