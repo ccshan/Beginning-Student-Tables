@@ -5,7 +5,7 @@ import {makeCircle, makeRectangle, makeEquiTriangle,
         makePlace, emptyScene, makeColor,
         paint, makeText, makeRotate} from './image.js';
 import { parse, parseQ, parsePrefix } from './parser.js';
-import { RecursionReferenceError } from './InterperterError';
+import { InterpreterError } from './InterperterError';
 
 /****************
    Interpreter
@@ -412,7 +412,7 @@ function typeCheck(prog, types) {
         // shoehorn a non-string into the message field
         // TODO: somehow make this use the approproate unparser maybe
         let displayElem = <React.Fragment>{[unparse_cons(prog), " ain't a " + typesString]}</React.Fragment>;
-        let e = new RecursionReferenceError("type error", displayElem);
+        let e = new InterpreterError("type error", displayElem);
         throw e;
     }
 }
