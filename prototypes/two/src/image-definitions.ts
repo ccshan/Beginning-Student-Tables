@@ -59,6 +59,6 @@ interface TextImage {
 
 type ImageArray = Array<Image>;
 
-type Image = Circle | Rectangle | Triangle | Beside | Above | Overlay | Place | TextImage;
+type Image = Circle | Rectangle | Triangle | Beside | Above | Overlay | TextImage;
 
 export type { Image };
