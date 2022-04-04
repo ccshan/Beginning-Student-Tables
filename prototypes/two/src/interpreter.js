@@ -6,6 +6,8 @@ import {makeCircle, makeRectangle, makeEquiTriangle,
         paint, makeText, makeRotate} from './image.js';
 import { parse, parseQ, parsePrefix } from './parser.js';
 import { InterpreterError } from './InterperterError';
+import { ImageComp } from './components/Table/ImageComp';
+import { takeKey } from './App';
 
 /****************
    Interpreter
@@ -279,7 +281,8 @@ function makeDefine (name, binding, env) {
 
 
 
-// Program -> [(String or SVG)]
+// Program -> [(String or <ImageComp /> (JSX.Element))] (value)
+// RIMAGE_T now returns a JSX.Element so images can be enlarged individually inside lists
 function unparse_cons(prog, scaleImage=false) {
     switch (prog.type) {
         case RNUM_T:
@@ -305,7 +308,7 @@ function unparse_cons(prog, scaleImage=false) {
         case RAPP_T:
             return ['(', ...unparse_cons(prog.value.funct), ...prog.value.args.map(unparse_cons).reduce((acc, arr) => [...acc, ' ', ...arr], ''), ')'];
         case RIMAGE_T:
-            return [paint(prog.value, scaleImage)];
+            return [<ImageComp image={prog.value} key={takeKey()}/>]
         case RCOLOR_T:
             return ['#<color>'];
         case RSTRUCT_T:
@@ -315,7 +318,7 @@ function unparse_cons(prog, scaleImage=false) {
     }
 }
 
-// Program -> [(String or SVG)]
+// Program -> [(String or <ImageComp /> (JSX.Element))]
 function unparse_list (prog, scaleImage=false) {
     switch (prog.type) {
         case RNUM_T:
@@ -348,7 +351,7 @@ function unparse_list (prog, scaleImage=false) {
         case RAPP_T:
             return ['(', ...unparse_list(prog.value.funct), ...prog.value.args.map(unparse_list).reduce((acc, arr) => [...acc, ' ', ...arr], ''), ')'];
         case RIMAGE_T:
-            return [paint(prog.value, scaleImage)];
+            return [<ImageComp image={prog.value} key={takeKey()}/>];
         case RCOLOR_T:
             return ['#<color>'];
         case RSTRUCT_T:
@@ -489,6 +492,8 @@ function makeStruct(superID, fieldIDs, env) {
  * Type Checking Functions
  * so I don't have to do prog.type === RTYPE_T all the time
  */
+
+/** move these all to global-definitions.ts eventually */
 
 function isRVAR (prog) {
     return prog.type === RVAR_T;

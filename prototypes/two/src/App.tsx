@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import 'react-table/react-table.css';
-import { interp, interpPrefix, unparse_cons, unparse_list, initEnv, isRAPP, RFUNCT_T, isRLIST, isRIMAGE, isRSTRUCT, RIMAGE_T, RLIST_T, RAPP_T, RSTRUCT_T } from './interpreter.js';
+import { interp, interpPrefix, unparse_cons, unparse_list, initEnv, RFUNCT_T, isRIMAGE } from './interpreter.js';
 import { parse, parsePrefix, parseQ } from './parser.js';
 import { allBools, gray, pink, yellow } from './header';
 import { paint, width, height, makeRectangle, makeOverlay } from './image';
@@ -12,12 +12,11 @@ import './App.css';
 
 // Type Imports
 import { CheckExpect, Example, ExampleArray, Formula, FormulaArray, Input, InputArray, isBooleanFormula, isValidatedProgInputNonYellow, isTableNameYellow, Parameter, ProgramInput, Table, ValidatedProgInput, OutputArray, Output, isOutputNonYellow, isParamNonYellow, isYellowProgramGray, ParameterArray } from './input-definitions';
-import { Image } from "./image-definitions";
 import { DefinitionsArea } from './components/DefinitionsArea';
 import { Succinct } from './components/Table/Succinct';
 import { BSLArea } from './components/BSLArea';
 import { isSnapshotArray, Snapshot } from './recording-definitions';
-import { Environment, isRBOOL, Program, ProgramArray } from './global-definitions';
+import { Environment, isRAPPT, isRBOOL, isRLIST, isRSTRUCT, Program, ProgramArray } from './global-definitions';
 import { CheckExpectArea } from './components/CheckExpectArea';
 import { InterpreterError } from './InterperterError';
 import { Inputs } from './components/Table/Inputs.js';
@@ -81,7 +80,7 @@ function deepEquals(proga: Program, progb: Program): boolean {
         return false;
     }
 
-    if (proga.type === RLIST_T && progb.type === RLIST_T) {
+    if (isRLIST(proga) && isRLIST(progb)) {
         if (proga.value === null || progb.value === null) {
             return proga.value === progb.value;
         }
@@ -89,7 +88,7 @@ function deepEquals(proga: Program, progb: Program): boolean {
     }
 
     // this case will prolly never even happen...
-    if (proga.type === RAPP_T && progb.type === RAPP_T) {
+    if (isRAPPT(proga) && isRAPPT(progb)) {
         if (proga.value.args.length !== progb.value.args.length) {
             return false;
         }
@@ -98,8 +97,7 @@ function deepEquals(proga: Program, progb: Program): boolean {
         return functCheck && argCheck;
     }
 
-    // for whatever reason couldn't find "RSTRUCT_T" ???? idk why
-    if (proga.type === RSTRUCT_T) {
+    if (isRSTRUCT(proga) && isRSTRUCT(progb)) {
         let structa = proga.value;
         let structb = progb.value;
 
@@ -124,7 +122,7 @@ function deepEquals(proga: Program, progb: Program): boolean {
         //   - when it is first used in a certain instance of the table method, it returns an array containing only zeros,
         //     however, after this I'm pretty sure it returns the array it should be returning
         //   - maybe something hasn't been properly initialized by the first time around?
-        function toRGBAArray(image: Image) {
+        function toRGBAArray(image: any) {
             let can = document.createElement('canvas');
             can.width = width(image);
             can.height = height(image);

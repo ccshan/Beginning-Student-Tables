@@ -88,7 +88,8 @@ An Image is one of
 ***/
 
 import { RepoTemplatePrivate } from '@primer/octicons-react';
-import React from 'react';
+import React, { useState } from 'react';
+import { ImageComp } from './components/Table/ImageComp';
 
 // these colors taken from https://github.com/brownplt/code.pyret.org/blob/horizon/src/web/js/trove/image-lib.js
 const colorDb = {
@@ -927,7 +928,6 @@ function render_rotate(image, x, y) {
 
     let translateX = width(img) * .2;
     let translateY = height(img) * .2;
-    console.log('tx, ty: ', translateX, translateY);
 
     let rotate = 'translate('+ translateX + ', ' + translateY + ') rotate(' + degree + ' ' + rotationPointX + ' ' + rotationPointY + ')';
 

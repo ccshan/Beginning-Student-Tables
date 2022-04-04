@@ -112,4 +112,4 @@ export function isRAPPT(prog: Program): prog is Application {
     return (prog as Application).type === RAPP_T;
 }
 
-export type { Yellow, Types, Program, ProgramArray, Variable, Environment, EnvironmentVariable, CellColors };
+export type { Yellow, Types, RImage, Program, ProgramArray, Variable, Environment, EnvironmentVariable, CellColors };

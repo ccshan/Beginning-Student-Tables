@@ -96,37 +96,19 @@ class TestCell extends React.Component<Props, State> {
 
         if (isValidatedProgInputNonYellow(want.validated) && isOutputNonYellow(output) && deepEquals(output, want.validated)) {
             return (
-                <td className='output' onClick={() => this.handleViewClick(output)}>
-                    {unparse(output, true)}
+                <td className='output'>
+                    {unparse(output)}
                     <div title={"Yay! It's right!"} className="check">
                         <Octicon
                             icon={Check} size="small" verticalAlign="middle" 
                             ariaLabel='Yay!' />
                     </div>
-                    {this.state.isOpen && (
-                        <dialog
-                            style={{ position: "absolute" }}
-                            open
-                            onClick={() => this.handleViewClick(output)}
-                        >
-                            {unparse(output)}
-                        </dialog>
-                    )}
                 </td>
             )
         } else if (isOutputNonYellow(output) && isValidatedProgInputNonYellow(output)){
             return (
-                <td className='output' onClick={() => this.handleViewClick(output)}>
-                    {this.state.isOpen && (
-                        <dialog
-                            style={{ position: "absolute" }}
-                            open
-                            onClick={() => this.handleViewClick(output)}
-                        >
-                            {unparse(output)}
-                        </dialog>
-                    )}
-                    {unparse(output, true)}
+                <td className='output'>
+                    {unparse(output)}
                 </td>
             );
         }
