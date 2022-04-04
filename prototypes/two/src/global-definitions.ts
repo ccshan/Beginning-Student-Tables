@@ -1,5 +1,5 @@
 import { NameInput, ValidatedProgInput } from "./input-definitions";
-import { RBOOL_T } from "./interpreter";
+import { RAPP_T, RBOOL_T, RIMAGE_T, RLIST_T, RSTRUCT_T } from "./interpreter";
 import { Image } from "./image-definitions";
 
 enum CellColors {
@@ -94,6 +94,22 @@ type Environment = Array<EnvironmentVariable>;
 
 export function isRBOOL(prog: ValidatedProgInput): prog is RBool {
     return (prog as RBool).type === RBOOL_T;
+}
+
+export function isRLIST(prog: Program): prog is RList {
+    return (prog as RList).type === RLIST_T;
+}
+
+export function isRIMAGE(prog: Program): prog is RImage {
+    return (prog as RImage).type === RIMAGE_T;
+}
+
+export function isRSTRUCT(prog: Program): prog is RStruct {
+    return (prog as RStruct).type === RSTRUCT_T;
+}
+
+export function isRAPPT(prog: Program): prog is Application {
+    return (prog as Application).type === RAPP_T;
 }
 
 export type { Yellow, Types, Program, ProgramArray, Variable, Environment, EnvironmentVariable, CellColors };
