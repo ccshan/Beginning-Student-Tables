@@ -11,7 +11,7 @@ import './App.css';
 // component imports 
 
 // Type Imports
-import { CheckExpect, Example, ExampleArray, Formula, FormulaArray, Input, InputArray, isBooleanFormula, isValidatedProgInputNonYellow, isTableNameYellow, Parameter, ProgramInput, Table, ValidatedProgInput, OutputArray, Output, isOutputNonYellow, isParamNonYellow, isYellowProgramGray, ParameterArray } from './input-definitions';
+import { CheckExpect, Example, ExampleArray, Formula, FormulaArray, Input, InputArray, isBooleanFormula, isValidatedProgInputNonYellow, isTableNameYellow, Parameter, ProgramInput, Table, ValidatedProgInput, OutputArray, Output, isOutputNonYellow, isParamNonYellow, isYellowProgramGray, ParameterArray, NameInput } from './input-definitions';
 import { DefinitionsArea } from './components/DefinitionsArea';
 import { Succinct } from './components/Table/Succinct';
 import { BSLArea } from './components/BSLArea';
@@ -19,7 +19,7 @@ import { isSnapshotArray, Snapshot } from './recording-definitions';
 import { Environment, isRAPPT, isRBOOL, isRLIST, isRSTRUCT, Program, ProgramArray } from './global-definitions';
 import { CheckExpectArea } from './components/CheckExpectArea';
 import { InterpreterError } from './InterperterError';
-import { Inputs } from './components/Table/Inputs.js';
+import { AddExampleButton } from './components/AddExampleButton';
 
 /*****************************
   Universal Constants I Want
@@ -231,6 +231,7 @@ class App extends React.Component<Props, State> {
             playbackTime: (props.snapshots ? 0 : undefined),
             snapshots: (props.snapshots ? undefined : [{ prefix, tables }])
         };
+
         this.prefixChange = this.prefixChange.bind(this);
         this.programChange = this.programChange.bind(this);
         this.playbackTimeChange = this.playbackTimeChange.bind(this);
@@ -282,10 +283,28 @@ class App extends React.Component<Props, State> {
         }
     }
 
+    /**
+     * Adds the given example to the given table, updates and calculates the state
+     * @param newExample Example to be added to table
+     * @param tableIndex Index of the table to be added in this.state.tables array
+     */
+    addNewExampleToTable(newExample: Example, tableIndex:number):any {
+        let tables =  Array.from(this.state.tables);
+        let currentTable = tables[tableIndex];
+        let currentExamples:ExampleArray = Array.from(currentTable.examples);
+        let newExamples:ExampleArray = [...currentExamples, newExample];
+        let newTable = {...currentTable, examples: newExamples};
+        tables[tableIndex] = newTable;
+      
+        this.setState({
+            tables: this.calculate(this.state.globalEnv, tables)
+        });
+    }
+    
     calculate(env:Environment, program:Array<Table>):Array<Table> {
-        // error array here
-        let errorArray:JSX.Element[] = [];
-        function makeLookup(table:Table) {
+        const addNewExampleToTable = this.addNewExampleToTable.bind(this);
+
+        function makeLookup(table:Table, tableIndex:number) {
             function lookup(args:ProgramArray) {
                 if (args.length !== table.params.length) {
                     throw new Error('Arity Mismatch, expected ' + table.params.length + ' argument' + (table.params.length === 1 ? '' : 's'));
@@ -322,8 +341,12 @@ class App extends React.Component<Props, State> {
                 }, undefined);
 
                 if (expr === undefined) {
-                    let displayElem:JSX.Element = <React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) is not an example</React.Fragment>;
-                    let e = new InterpreterError("error", displayElem);
+
+                    let displayElem:JSX.Element = (<>
+                                                        <React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) is not an example</React.Fragment>
+                                                        <AddExampleButton args={args} tableIdx={tableIndex} addExample={addNewExampleToTable} />
+                                                    </>);
+                    let e = new InterpreterError("example not found error", displayElem);
                     throw e;
                 }
 
@@ -333,7 +356,7 @@ class App extends React.Component<Props, State> {
             return lookup;
         }
 
-        let lookups = program.map((table) => ({ name: table.name, binding: { value: makeLookup(table), type: RFUNCT_T } }));
+        let lookups = program.map((table, tableIndex) => ({ name: table.name, binding: { value: makeLookup(table, tableIndex), type: RFUNCT_T } }));
         let tableEnv = [...env, ...lookups];
 
         function calcTable(table:Table):Table {

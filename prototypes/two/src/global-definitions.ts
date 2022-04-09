@@ -42,7 +42,7 @@ interface Application {
 }
 
 interface RFunction {
-    value: Function
+    value: any
     type: Types.RFUNCT_T
 }
 
