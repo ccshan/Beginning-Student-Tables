@@ -1,5 +1,5 @@
 import React from "react";
-import { takeKey } from "../../App";
+import { peekKey, takeKey } from "../../App";
 import { ErrorMessage } from "../ErrorMessage";
 import { Environment, Program, Yellow } from "../../global-definitions";
 import { Input, InputArray, isValidatedProgInputNonYellow } from "../../input-definitions";
@@ -66,7 +66,7 @@ function Inputs(props:Props) {
                                 rawText=''
                                 disabled={props.disabled}
                                 isValid={validProg}
-                                onValid={(text:string) => validInputChange({ prog: { raw: text, validated: { yellow: "yellow" } }, key: takeKey() }, input, text)}
+                                onValid={(text:string) => validInputChange({ prog: { raw: text, validated: { yellow: "yellow" } }, key: peekKey() }, input, text)}
                                 
                                 onEmpty={()=>null}
                             />
