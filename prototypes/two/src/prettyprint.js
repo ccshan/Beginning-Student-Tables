@@ -444,7 +444,8 @@ function toBSL(tables, listOrCons, width, ribbon) {
         if (splitForms.bools.length !== 0) {
             // this is an array of documents
             let condRows = splitForms.bools.map((form) => (
-                nest(1, bracket('[', stack([fieldToDoc(form.prog), formulasToDoc(form.thenChildren)]),']'))
+                // form : Formula
+                nest(1, bracket('[', stack([fieldToDoc(form.prog.validated), formulasToDoc(form.thenChildren)]),']'))
             ));
             // this one is just a doc
             bools = nest(2, bracket('(', stack([text('cond'), ...condRows]),')'));
