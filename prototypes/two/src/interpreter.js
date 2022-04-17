@@ -27,15 +27,6 @@ const RIF_T =     10;
 const RSTRUCT_T = 11;
 const RCLOS_T =   12;
 
-const varRE = /^[^\s",'`()[\]{}|;#]+/; // except numbers
-const appRE = /^\(/;
-const numRE = /^-?(?:\d+(?:\.\d*)?|\.\d+)(?=$|[\s",'`()[\]{}|;#])/; // this one doesn't permit fractions
-const boolRE = /^#(?:[tfTF]|true|false)(?=$|[\s",'`()[\]{}|;#])/;
-const strRE = /^"[^\\"]*"/; // TODO: handle backslash escape
-const quoteRE = /^'/;
-const symRE = /^[^\s",'`()[\]{}|;#]+/; // except numbers
-const listRE = /^\(/;
-
 const protoEnv = [
     // functions
     {name: '+', binding: {type: RFUNCT_T,
