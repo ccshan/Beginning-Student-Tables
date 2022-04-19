@@ -69,6 +69,8 @@ Two sentences describing the features.
    + [Examples of Uses](#example-of-uses)
       * [Recap of use](#recap-of-use)
    + [Parenthesized Syntax](#parenthesized-syntax)
+      * [Quick Rundown](#quick-rundown)
+      * [Closer Look](#closer-look)
 * [For Developers](#for-developers)
    + [Project Structre](#project-structre)
    + [Examples](#examples)
@@ -105,7 +107,7 @@ Two sentences describing the features.
 <!-- have two sections: one for c211, one for other backgrounds -->
 **Already familiar with the Beginning Student Language?** Great! That means you're probably also already familiar with check-expects. This tool allows you to write and test different formulas with your check-expects easily! ...
 
-**Never seen this language before?** No worries! Beginning Student Language check-expects are just like unit tests. The BSL Table tool allows you to design functions and run unit tests on them. To get started with BSL's paranthesized syntax, refer to the [Paranthesized Syntax](#parenthesized-syntax) section below! ... 
+**Never seen this language before?** No worries! Beginning Student Language check-expects are just like unit tests. The BSL Table tool allows you to design functions and run unit tests on them. To get started with BSL's paranthesized syntax, refer to the [Parenthesized Syntax](#parenthesized-syntax) section below! ... 
 
 ### Examples of Uses
 Here are some example cases on how you can use the Beginning Student Tables tool to write functions and solve problems. First let's look at a simple case, where we try to convert a temptertature in celsius to fahrenheit. 
@@ -156,11 +158,59 @@ Some of the things we learned:
 - Adjust formulas in new formula cells
 - Generate BSL code using the 'show combined program' checkbox
 
-### Paranthesized Syntax 
+### Parenthesized Syntax 
 As described by "How to Design Programs", the Beginning Student Language is:
 > Quote describing the language here
 
-Descriptive things about the language...
+#### Quick Rundown
+Here are a few quick things to know about BSL to get you started:
+- BSL uses parenthsized prefix notation syntax: 
+   - Operators come before the operands: 
+   ```
+   (operator operand-one operand-two)
+   ```
+   - So, adding five and two: 
+   ```
+   (+ 5 2)
+   ```
+- Strings are specified with double quotes:
+- Variables are assigned using the `define` function:
+   - Assigning the value 5 to x :
+   ```
+   (define x 5)
+   ```
+- Lists can be defined in two ways:
+   - using `cons` to define a list of elements, one and two (more on this below) :
+   ```
+   (cons 1 (cons 2 empty))
+   ```
+   - using the abbreviated `list` syntax to define a list of elemnts, one and two:
+   ```
+   (list 1 2)
+   ```
+   - note that spaces are used instead of commas
+- Unit tests can be written using the `check-expect` function (more on this below):
+   - calls the specified function and compares it with specified output:
+   ```
+   (check-expect (+ 5 2) 7)
+   ```
+   - the above `check-expect` will be `#true` since 5 plus 2 is 7
+   - specifically, the inputs to `+` are 5 and 2, and the 'want' for it is 7
+
+#### Closer Look
+Let's take a closer look at the important features of BSL.
+
+- **Functions** more on using/defining functions
+
+- **Variables** more on variables
+
+- **Lists** more on lsits here
+
+- **Unit Tests/Check-expects** more on unit tests here
+
+- **Structures** more on structures here
+
+- **Primitives** link to the current list of supported primitives 
 
 If you want to learn more about BSL, visit the official documentation: https://docs.racket-lang.org/htdp-langs/beginner.html
 
