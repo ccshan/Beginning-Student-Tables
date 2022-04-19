@@ -84,11 +84,9 @@ function Succinct(props: Props) {
     let paramTypes = sides[0].match(/[a-zA-Z]+/g);
     let outType = sides[1].match(/[a-zA-Z]+/g);
 
-    if (typeof paramTypes === null && typeof outType === null) {
-      return false;
-    } else {
-      return paramTypes!.length >= 1 && outType!.length === 1;
-    }
+    let noNull = paramTypes !== null && outType !== null;
+ 
+    return noNull ? paramTypes!.length >= 1 && outType!.length === 1 : false;
   }
 
   const reals = props.tables.map((table, index) => (
