@@ -1,7 +1,7 @@
 import React from "react";
 import { takeKey, unparse } from "../App";
 import { Program, ProgramArray } from "../global-definitions";
-import { Example, Input } from "../input-definitions";
+import { Example, Input, InputArray } from "../input-definitions";
 import { parse } from "../parser";
 
 interface Props {
@@ -15,23 +15,31 @@ interface Props {
 export const AddExampleButton:React.FC<Props> = ({ args, tableIdx, addExample }) => {
 
     /**
-     * adds the examle generated from the passed args prop
+     * Handles the button click to add an example
+     * Generates a new Example from the args prop and calls addExample to add the new Example to the table
      */
     const handleClick = () => {
-        let rawInput:any = args.flatMap(a => [' ', ...unparse(a)]);
-        // for whatever reason .join().trim() cannot be done on the same line as flatMap
-        rawInput = rawInput.join("").trim();
-        let newValidated:Program = parse(rawInput).prog;
-        
-        let input:Input = { prog: { raw: rawInput, validated: newValidated }, key: takeKey() };
-        let newExample:Example = { inputs: [input], want: { raw: "", validated: { yellow: "yellow" }}, key: takeKey() };
+        let newInputs:InputArray = [];
+        for (let i = 0; i < args.length; i++) {
+
+            // generates the raw text from args
+            let newRaw:string = "";
+            newRaw = unparse(args[i]).reduce((prevElem:string, currElem:string) => {
+                console.log(prevElem, currElem);
+                return prevElem + " " + currElem.toString().trim();
+            });
+            
+            newInputs = [...newInputs, {prog: {raw: newRaw.toString(), validated: args[i]}, key: takeKey() }];
+        }
+
+        let newExample:Example = { inputs: newInputs, want: { raw: "", validated: { yellow: "yellow" }}, key: takeKey() };
         addExample(newExample, tableIdx);
     }
 
 
     return (
         <>
-            <button onClick={() => handleClick()}>Add Input</button>
+            <button onClick={() => handleClick()}>Add Example</button>
         </>
     )
 }

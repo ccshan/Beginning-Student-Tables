@@ -329,7 +329,8 @@ class App extends React.Component<Props, State> {
                     })) {
                         if (!isValidatedProgInputNonYellow(example.want.validated)) {
                             let displayElem = <React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>;
-                            let e = new InterpreterError("error", displayElem);
+                            // <button onClick={ [ref of ValidatedArea of Example's Want].current.focus } />
+                            let e = new InterpreterError("example doesn't have a want", displayElem);
                             throw e;
                         } else {
                             // Note: don't need to catch exception here because it will be caught in calcFormula
@@ -391,7 +392,7 @@ class App extends React.Component<Props, State> {
                         let outputProg:Program = interp(formula.prog.validated, env);
                         output = outputProg ;
                     } catch (e) {
-                        output = e as any; /// new variable messgae to user 
+                        output = e as any;
                     }
 
                     return output;
