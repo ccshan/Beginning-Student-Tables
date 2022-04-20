@@ -58,7 +58,7 @@ If this doesn't make sense, the README in ```prototypes/two``` contains more inf
    ``` 
 -->
 # Beginning Student Tables
-A tool for writing prorams systematically using check-expects (unit tests) in the Beginning Student Language.
+A tool for writing programs systematically using check-expects (unit tests) in the Beginning Student Language.
 
 Two sentences describing the features. 
 
@@ -66,6 +66,7 @@ Two sentences describing the features.
 ## Table Of Contents
 * [Quick Start](#quick-start)
 * [For Students](#for-students)
+   + [Using the Table Tool](#using-the-table-tool)
    + [Examples of Uses](#example-of-uses)
       * [Recap of use](#recap-of-use)
    + [Parenthesized Syntax](#parenthesized-syntax)
@@ -109,13 +110,37 @@ Two sentences describing the features.
 
 **Never seen this language before?** No worries! Beginning Student Language check-expects are just like unit tests. The BSL Table tool allows you to design functions and run unit tests on them. To get started with BSL's paranthesized syntax, refer to the [Parenthesized Syntax](#parenthesized-syntax) section below! ... 
 
+### Using the Table Tool
+Transition line... (something about getting to know the table, and being familiart with the design recipe)
+
+This section tells the user about the layout of the table tool: what the name field is, signature field, purpose, inputs, params, want, formula and etc...
+
+* **Definitions Area** this is where you can define constants, functions, or structures
+* **Check-Expect Area** write your check-expects here, then add them to your tables using the 'import button'
+
+**Table Header**
+* **'Table Name' cell** where you will write the name of the function you're writing
+* **'Signature' cell** where you will write the signature (same as contract) of the function: the input types and output type
+* **'Purpose' cell** as the name implies, this is where you will write the purpose of the function
+
+**Table Body**
+* **Paramter cell** this is where you name the inputs to your function, add more by typing into the green 'dummy cell' next to it
+* **Formula cell** here you can write arithmetic which the table will evaluate using your inputs
+* **Input cell** the inputs to your function, add more by typing into the green 'dummy cell' next to it
+* **Want cell** this is where you will type the expected value for the given input in that row
+
+* **Language dropdown** you can select to either use BSL or BSL with list abbreviations
+* **Show Combined Program** click the checkbox to generate the BSL code for your tables
+
+An image over here highlighting the different components of the table tool
+
 ### Examples of Uses
 Here are some example cases on how you can use the Beginning Student Tables tool to write functions and solve problems. First let's look at a simple case, where we try to convert a temptertature in celsius to fahrenheit. 
 1. Simple Use
 - The problem: write a function to convert celsius to fahrenheit 
 - Ways to approach this problem: 
    1. Write inputs and wants. Type in the formula you think will work. Adjust the formula to pass all the written examples!
-   2. Write check-expects in the 'check-expect area'. Write a formula. Adjust the formula to pass all the written examples
+   2. Write check-expects in the 'check-expect area'. Write a formula. Adjust the formula to pass all the written examples!
 - Let's test it out!
    - First, let's fill in the function name, signature, and write some examples:
    - < image showing this here >
