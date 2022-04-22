@@ -74,6 +74,10 @@ Two sentences describing the features.
       * [Closer Look](#closer-look)
 * [For Developers](#for-developers)
    + [Project Structre](#project-structre)
+      * [App Component](#app-component)
+      * [Table Components](#table-components)
+      * [Interepreter](#interpreter)
+      * [Types](#types)
    + [Examples](#examples)
 
 ---
@@ -125,14 +129,17 @@ This section tells the user about the layout of the table tool: what the name fi
 
 **Table Body**
 * **Paramter cell** this is where you name the inputs to your function, add more by typing into the green 'dummy cell' next to it
-* **Formula cell** here you can write arithmetic which the table will evaluate using your inputs
+* **Formula cell** here you can write arithmetic which the table will evaluate using your inputs, to start making a new formula, start writing in the green 'dummy cell'.
 * **Input cell** the inputs to your function, add more by typing into the green 'dummy cell' next to it
 * **Want cell** this is where you will type the expected value for the given input in that row
+* **Output cell** this is where the output of your formulas will appear, if output is not evaluated it will be gray, if there is an error it will appear pink
 
 * **Language dropdown** you can select to either use BSL or BSL with list abbreviations
 * **Show Combined Program** click the checkbox to generate the BSL code for your tables
 
 An image over here highlighting the different components of the table tool
+
+It's important to remember the colors used by the table. Yellow indicates new cells, green indicates dummy cells which when typed into will make yellow cells, pink cells means there is an error, and gray cells are unused. 
 
 ### Examples of Uses
 Here are some example cases on how you can use the Beginning Student Tables tool to write functions and solve problems. First let's look at a simple case, where we try to convert a temptertature in celsius to fahrenheit. 
@@ -247,8 +254,92 @@ Two line description on development.
 In this section we will cover the project structure, and then how to add some features. 
 
 ### Project Structure
-This application is written in TypeScript using React. 
+This application is written in TypeScript using React.
+
+The project consisits of three importnat parts. The main App component, the table components, and the interpereter. The App component is at the top of the program hierarchy and either directly or inderectly interacts with almost all other sections of the program.
+
+
+#### App Component
+< breakdown of what App.tsx does and how >
+
+#### Table Components
+< breakdown of the funcionality of several of the components that make up the table >
+
+#### Interpreter
+< breakdown of the how the interpreter is written >
+
+#### Types
+< breakdown of the importnat types >
+
+You can find more extensive documentation inside the files. 
 
 ### Examples
 
-- Adding Function
+< I think most of the explanation should be covered in the above section >
+1. Adding a Function
+   - We'll add a function that returns the first character of a given string, let's call it `first-char`
+   - Functions are part of the interpreter, so open `/path/to/prototypes/two/src/interpreter.js' in your IDE
+   - To begin, let's define a new function, which will handle the logic for `first-char` :
+      ```
+      function firstChar(args) {
+         // logic here...
+      }
+      ```
+   - You can note two important detials here, `firstChar` takes 'args' as a paramter, and that it returns an object with a value and a type. We'll cover the latter a bit later.
+   - when this function will be called the operands are passed as paramters, that is, `args` will be the operands to our new function `first-char`. So in our case, `args` should be a string.
+   - First, let's check that we only get one operand, this means that the length of `args` should be 1. Otherwise, we should throw an Error.
+   - It's also a good iea to check that operand is a string. We can do this by using a type-check. This is what the logic inside `firstChar` should currently look like:  
+      ```
+      // check argument length
+      if (args.length != 1) {
+         throw new Error('arity mismatch');
+      }
+      // check function operand types
+      typeCheck(args[0], [RSTRING_T]);
+      ```
+   - `RSTRING_T` is the corresponding type to a string in our interpreter < this should be covered in the above sections ... >
+   - Now its time to actually perform what we want `first-char` to do!
+   - To get the first character of a string, we can simply call substring on the given string, making sure to check that it has one character at least:
+      ```
+      let str = args[0];
+      let value; 
+      if (str.length > 0) {
+         value = str.substring(0, 1);
+      } else {
+         value = "";
+      }
+
+      // same as: value = str.length > 0 ? str.substring(0, 1) : "";
+      ```
+   - Keep in mind that this is function will be evaluted by our interpreter, so let's return it in accordingly: 
+      ```
+      return {value: value , type: RSTRING_T};
+      ```
+   - This is what the body of `firstChar` should look like:
+      ```
+      // check argument length
+      if (args.length != 1) {
+         throw new Error('arity mismatch');
+      }
+      // check function operand types
+      typeCheck(args[0], [RSTRING_T]);
+      // calculate return value
+      let str = args[0];
+      let value; 
+      if (str.length > 0) {
+         value = str.substring(0, 1);
+      } else {
+         value = "";
+      }
+
+      return {value: value , type: RSTRING_T};
+      ```
+   - The last thing we need to do is add it to protoEnv :
+      ```
+      protoEnv = [
+         ...
+         { name: 'first-char', binding: { type: RFUNC_T, value: firstChar } }
+      ];
+      ```
+   - < a little breakdown of this >
+   - Congrats! You have successfully added a new function to the BSL Table Tool!
