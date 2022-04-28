@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import 'react-table/react-table.css';
 import { interp, interpPrefix, unparse_cons, unparse_list, initEnv, RFUNCT_T, isRIMAGE } from './interpreter.js';
-import { parse, parsePrefix, parseQ } from './parser.js';
+import { parsePrefix } from './parser.js';
 import { allBools, gray, pink, yellow } from './header';
 import { paint, width, height, makeRectangle, makeOverlay } from './image';
 import { Sendifier } from './sendifier.js';
@@ -11,7 +11,10 @@ import './App.css';
 // component imports 
 
 // Type Imports
-import { CheckExpect, Example, ExampleArray, Formula, FormulaArray, Input, InputArray, isBooleanFormula, isValidatedProgInputNonYellow, isTableNameYellow, Parameter, ProgramInput, Table, ValidatedProgInput, OutputArray, Output, isOutputNonYellow, isParamNonYellow, isYellowProgramGray, ParameterArray, NameInput } from './input-definitions';
+import { CheckExpect, Example, ExampleArray, Formula, FormulaArray, Input, InputArray, isBooleanFormula, isValidatedProgInputNonYellow,
+        isTableNameYellow, Parameter, ProgramInput, Table, ValidatedProgInput, OutputArray, Output, isOutputNonYellow, isParamNonYellow, 
+        isYellowProgramGray, ParameterArray } from './input-definitions';
+
 import { DefinitionsArea } from './components/DefinitionsArea';
 import { Succinct } from './components/Table/Succinct';
 import { BSLArea } from './components/BSLArea';
@@ -180,8 +183,6 @@ function deepEquals(proga: Program, progb: Program): boolean {
 
     return proga!.value === progb!.value;
 }
-
-// TODO: Add image component to render images in outputs
 
 
 interface Props {
@@ -512,7 +513,7 @@ class App extends React.Component<Props, State> {
 
     // String ->
     // takes the string from the check-expect area and parses it, adding it to the tables
-    // this should pass down error message to make import area red if there is an error in parsing
+    // TODO: pass down error message to make import area red if there is an error in parsing
     importCheckExpects(expression:string) {
         let tables:Array<Table> = Array.from(this.state.tables);
         let checkExpects:Array<CheckExpect>;
@@ -522,9 +523,9 @@ class App extends React.Component<Props, State> {
             return;
         }
 
-        checkExpects.map((checkExpect, ceIdx) => {
+        checkExpects.forEach((checkExpect, ceIdx) => {
             let changed = false;
-            tables.map((table, tabIdx) => {
+            tables.forEach((table, tabIdx) => {
                 if (!changed && (checkExpect.name === table.name || isTableNameYellow(table.name))) {
                     let idx = tables.indexOf(table);
                     tables[idx] = this.addToTable(checkExpect, table);
@@ -539,6 +540,12 @@ class App extends React.Component<Props, State> {
     }
 
     // returns a new table containing the given check expect
+    /**
+     * Generates new table from given CheckExpect and adss it to the given array of Tables 
+     * @param checkExpect the CheckExpect to generate a table from
+     * @param tables the array of Tables to add to
+     * @returns a new array of Tables including the Table generated from checkExpect
+     */
     addNewTable(checkExpect: CheckExpect, tables: Array<Table>):Array<Table> {
         // let tables = this.state.tables;
         let inputs:InputArray = [];
@@ -549,7 +556,7 @@ class App extends React.Component<Props, State> {
         let examples:ExampleArray = [{inputs: inputs, want: checkExpect.want, key: takeKey()}];
 
         let newParams:ParameterArray = [];
-        checkExpect.inputs.map((input, i) => {
+        checkExpect.inputs.forEach((input, i) => {
             if (i >= newParams.length) {
                 let newParam:Parameter = { name: {yellow: "yellow"}, key: takeKey() };
                 newParams = [...newParams, newParam];
@@ -568,9 +575,20 @@ class App extends React.Component<Props, State> {
         return tables;
     }
     
-    // adds check-expect to an existing table
+    /**
+     * Adss the checkExpect to an existing table
+     * @param checkExpect the CheckExpect to add
+     * @param tableToChange the Table to add checkExpect to
+     * @returns a new Table with the added checkExpect
+     */
     addToTable(checkExpect: CheckExpect, tableToChange:Table):Table {
 
+        /**
+         * Determines whether the given Example is in the Table
+         * @param example the Example to search for
+         * @param table the Table to search in
+         * @returns whether the Example is in the Table
+         */
         function isExampleInTable(example:Example, table:Table) {
             for (let i = 0; i < table.examples.length; i++) {
                 if (examplesSame(example, table.examples[i]) && (table.examples[i].want.raw === example.want.raw)) {
@@ -580,6 +598,12 @@ class App extends React.Component<Props, State> {
             return false;
         }
 
+        /**
+         * Determines whether the two given Examples are the same
+         * @param exOne the first Example
+         * @param exTwo the second Example
+         * @returns whether the two given Examples are the same
+         */
         function examplesSame(exOne: Example, exTwo: Example) {
             if (exOne.inputs.length !== exTwo.inputs.length || exOne.want.raw !== exTwo.want.raw) {
                 return false;
@@ -589,19 +613,48 @@ class App extends React.Component<Props, State> {
             }
             return true;
         }
+
         
-        // this is a sloppy way of doing it but, this generates the new example,
-        // which is then used to see if it is already in the given table
-        let newExample:Example;
-        let newInputs:InputArray = [];
-        checkExpect.inputs.forEach((ceInput:ProgramInput, ceIdx:number) => {
-            let newInput = { prog: { raw: ceInput.raw, validated: ceInput.validated }, key: takeKey() };
-            newInputs = [...newInputs, newInput];
-        });
+        /**
+         * Generates a new Example from the given CheckExpect
+         * @param checkExpect the CheckExpect to generate the new Example from
+         * @returns new Example generated from the given CheckExpect
+         */
+        function generateNewExample(checkExpect: CheckExpect) {
+            let newExample:Example;
+            let newInputs:InputArray = [];
+            // find the length of the longest inputs array out of all the examples in the table to change
+            let currentMost = tableToChange.examples[0].inputs.length;
+            tableToChange.examples.forEach((example:Example) => {
+                currentMost = example.inputs.length > currentMost ? example.inputs.length : currentMost;
+            });
 
-        let newWant:ProgramInput = { raw: checkExpect.want.raw, validated: checkExpect.want.validated};
-        newExample = { inputs: newInputs, want: newWant, key: takeKey() };
+            // generate new InputArray from the CheckExpect
+            checkExpect.inputs.forEach((ceInput:ProgramInput, ceIdx:number) => {
+                let newInput = { prog: { raw: ceInput.raw, validated: ceInput.validated }, key: takeKey() };
+                newInputs = [...newInputs, newInput];
+            });
 
+            let newInputsLength = newInputs.length;
+            // if the generated example has less inputs than the example with the most inputs in the table to change then
+            // empty inputs are added to the example's inputs to match
+            if (newInputsLength < currentMost) {
+                let diff = currentMost - newInputsLength;
+                for (let i = 0; i < diff; i++) {
+                    newInputs = [...newInputs, { prog: { raw: "", validated: { yellow: 'yellow'}}, key: takeKey() }];
+                }
+            }
+            
+
+            let newWant:ProgramInput = { raw: checkExpect.want.raw, validated: checkExpect.want.validated};
+            newExample = { inputs: newInputs, want: newWant, key: takeKey() };
+            return newExample;
+        }
+
+        // generate new Example
+        let newExample = generateNewExample(checkExpect);
+
+        // only add new Example if it is not already in the table
         if (isExampleInTable(newExample, tableToChange)) {
             return tableToChange;
         }
@@ -609,22 +662,15 @@ class App extends React.Component<Props, State> {
         let newFormulas:FormulaArray = [];
         let newParams:ParameterArray = tableToChange.params;
         let newExamples:ExampleArray = [];
-        let newInputsLength:number; // to be used to match all exmaple inputs to have the same length
 
+        let currentMost = tableToChange.examples[0].inputs.length;
+        tableToChange.examples.forEach((example:Example) => {
+            currentMost = example.inputs.length > currentMost ? example.inputs.length : currentMost;
+        });
+
+        // add the generated example to the table
         tableToChange.examples.forEach((example, eIdx) => {
-            let newExample:Example;
-            let newInputs:InputArray = [];
-            
-            // generates new inputs
-            checkExpect.inputs.forEach((ceInput:ProgramInput, ceIdx:number) => {
-                let newInput:Input = { prog: { raw: ceInput.raw, validated: ceInput.validated }, key: takeKey() };
-                newInputs = [...newInputs, newInput];
-            });
 
-            newInputsLength = newInputs.length;
-
-            let newWant:ProgramInput = { raw: checkExpect.want.raw, validated: checkExpect.want.validated};
-            newExample = { inputs: newInputs, want: newWant, key: takeKey() };
             // if the example has a yellow input, it will add the new example to that row of the table
             // really this should check all input paramaters to see if none are yellow
             if (!isValidatedProgInputNonYellow(example.inputs[0].prog.validated)) {
@@ -637,12 +683,18 @@ class App extends React.Component<Props, State> {
             
         });
 
+        // find most inputs after the new example has been generated
+        let mostInputs = newExamples[0].inputs.length;
+        newExamples.forEach((example:Example) => {
+            mostInputs = example.inputs.length > mostInputs ? example.inputs.length : mostInputs;
+        });
+
         // for every example's inputs, if the amount of inputs for that example is less than the new most inputs length,
         // fill the inputs array with empty inputs to match the new length
         // this is sloppy way of doing it since it mutates the table directly, but it works
-        tableToChange.examples.map((example, i) => {
-            if (example.inputs.length < newInputsLength) {
-                checkExpect.inputs.map((input, i:number) => {
+        tableToChange.examples.forEach((example, i) => {
+            if (example.inputs.length < mostInputs) {
+                checkExpect.inputs.forEach((input, i:number) => {
                     if (i >= example.inputs.length) {
                         example.inputs = [...example.inputs, { prog: { raw: "", validated: { yellow: "yellow"} }, key: takeKey() }];
                     }
@@ -651,7 +703,7 @@ class App extends React.Component<Props, State> {
         });
 
         // add new paramters for each new input field
-        checkExpect.inputs.map((input, i) => {
+        checkExpect.inputs.forEach((input, i) => {
             if (i >= newParams.length) {
                 let newParam:Parameter = { name: {yellow: "yellow"}, key: takeKey() };
                 newParams = [...newParams, newParam];
@@ -660,9 +712,9 @@ class App extends React.Component<Props, State> {
 
         // matches the number of formula outputs to the new number of examples in the table
         let formulasArr = tableToChange.formulas;
-        tableToChange.formulas.map((formula, i) => {
+        tableToChange.formulas.forEach((formula, i) => {
             let newOutputs:OutputArray = formula.outputs;
-            newExamples.map((example, i) => {
+            newExamples.forEach((example, i) => {
                 if (i >= formula.outputs.length) {
                     let newOutput:Output = { yellow: "yellow" };
                     newOutputs = [...newOutputs, newOutput];
