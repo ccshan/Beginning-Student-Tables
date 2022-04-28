@@ -1,8 +1,7 @@
 import React from "react";
 import { takeKey, unparse } from "../App";
-import { Program, ProgramArray } from "../global-definitions";
-import { Example, Input, InputArray } from "../input-definitions";
-import { parse } from "../parser";
+import { ProgramArray } from "../global-definitions";
+import { Example, InputArray } from "../input-definitions";
 
 interface Props {
 

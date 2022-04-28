@@ -1,18 +1,7 @@
 import React from 'react';
 import { sessionURL } from './sendifier.js';
 import { App } from './App';
-import { Snapshot } from './recording-definitions';
 
-/*
-interface Props {
-    match : any
-
-}
-
-interface State {
-    snapshots: boolean | Array<Snapshot>
-}
-*/
 class FetchRecordings extends React.Component {
     constructor(props) {
         super(props);

@@ -1,7 +1,7 @@
 import React from "react";
 import { deepEquals, unparse_to_string } from "../../App";
 import { ErrorMessage } from "../ErrorMessage";
-import { Environment, Program, Yellow } from "../../global-definitions";
+import { Environment, Program } from "../../global-definitions";
 import { height, width } from "../../image";
 import { isValidatedProgInputNonYellow, ProgramInput } from "../../input-definitions";
 import { unparse_cons, interp, parseCheck, RIMAGE_T } from "../../interpreter";

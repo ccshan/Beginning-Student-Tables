@@ -56,5 +56,4 @@ export const ImageComp:React.FC<Props> = ({ image }) => {
                     )}
         </div>
     )
-
 }

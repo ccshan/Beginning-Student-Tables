@@ -1,7 +1,7 @@
 import React from "react";
 import { peekKey, takeKey, unparse_to_string } from "../../App";
 import { RemButton } from "../RemButton";
-import { BooleanFormula, Formula, isBooleanFormula, isFormulaNonEmpty, Yellow } from "../../input-definitions";
+import { Formula, isBooleanFormula, isFormulaNonEmpty } from "../../input-definitions";
 import { parseCheck } from "../../interpreter";
 import { ValidatedArea } from "../ValidatedArea";
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { peekKey, takeKey } from "../../App";
 import { ErrorMessage } from "../ErrorMessage";
-import { Environment, Program, Yellow } from "../../global-definitions";
+import { Environment, Yellow } from "../../global-definitions";
 import { Input, InputArray, isValidatedProgInputNonYellow } from "../../input-definitions";
 import { interp, parseCheck } from "../../interpreter";
 import { ValidatedArea } from "../ValidatedArea";
