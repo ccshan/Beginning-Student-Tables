@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { RefObject } from 'react';
 
 // the text property can be removed later on
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
     text: string | undefined
     rawText: string
     disabled: boolean
+    inputRef?: RefObject<HTMLTextAreaElement>
     
     isValid: (text: undefined | string) => boolean
     onValid: (text: string) => void
@@ -78,6 +79,7 @@ textChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
                 onChange={this.textChange}
                 spellCheck={false}
                 value={text}
+                ref={this.props.inputRef}
             />
         );
     }

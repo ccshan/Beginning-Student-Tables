@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { RefObject } from 'react';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { peekKey, takeKey } from '../../App';
 import { RemButton } from "../RemButton";
@@ -100,11 +100,11 @@ function SuccinctBody(props: Props) {
         let newYellowExample: Example;
 
         if (sourceIndex === examplesList.length) {
-            newYellowExample = { inputs: [{ prog: {raw: '' , validated: { yellow : 'yellow' }}, key: takeKey() }], want: {raw: '' , validated: { yellow : 'yellow' }}, key: takeKey() };
+            newYellowExample = { inputs: [{ prog: {raw: '' , validated: { yellow : 'yellow' }}, key: takeKey() }], want: {raw: '' , validated: { yellow : 'yellow' }}, wantInputRef: React.createRef(), key: takeKey() };
             examplesList.splice(destinationIndex, 0, newYellowExample);
             props.handleOnDrag(examplesList, props.tableIndex!, true);
         } else if (destinationIndex === examplesList.length) {
-            newYellowExample = { inputs: [{ prog: {raw: '' , validated: { yellow : 'yellow' }}, key: takeKey() }], want: {raw: '' , validated: { yellow : 'yellow' }}, key: takeKey() };
+            newYellowExample = { inputs: [{ prog: {raw: '' , validated: { yellow : 'yellow' }}, key: takeKey() }], want: {raw: '' , validated: { yellow : 'yellow' }}, wantInputRef: React.createRef(), key: takeKey() };
             examplesList.splice(destinationIndex, 0, newYellowExample);
             const [reorderedExample] = examplesList.splice(sourceIndex, 1);
             examplesList.splice(destinationIndex, 0, reorderedExample);
@@ -149,6 +149,7 @@ function SuccinctBody(props: Props) {
                         globalEnv={props.globalEnv}
                         dummy={false}
                         want={example.want}
+                        wantInputRef={example.wantInputRef}
                         wantChange={(want:ProgramInput) => exampleChange({ ...example, want },
                             example)}
                     />
@@ -157,6 +158,7 @@ function SuccinctBody(props: Props) {
         </Draggable>
     ));
 
+    const dummyRef:RefObject<HTMLTextAreaElement> = React.createRef();
     const dummy = (
         // index = examples.length
         <Draggable key={peekKey(props.paramNames.length)} index={props.examples.length} draggableId={peekKey().toString()}>
@@ -171,6 +173,7 @@ function SuccinctBody(props: Props) {
                         inputsChange={(inputs: InputArray) => exampleChange({
                             inputs,
                             want: { raw: '', validated: { yellow: 'yellow' } },
+                            wantInputRef: React.createRef(),
                             key: takeKey()
                         },
                             {})}
@@ -189,9 +192,11 @@ function SuccinctBody(props: Props) {
                         globalEnv={props.globalEnv}
                         dummy={true}
                         want={{raw:'', validated:{yellow:'yellow'}}}
+                        wantInputRef={dummyRef}
                         wantChange={(want: ProgramInput) => exampleChange({
                             want,
                             inputs: props.paramNames.map((_) => ({ prog: { raw: '', validated: { yellow: 'yellow' } }, key: takeKey() })),
+                            wantInputRef: dummyRef,
                             key: takeKey()
                         },
                             {})}

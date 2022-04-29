@@ -24,14 +24,13 @@ export const AddExampleButton:React.FC<Props> = ({ args, tableIdx, addExample })
             // generates the raw text from args
             let newRaw:string = "";
             newRaw = unparse(args[i]).reduce((prevElem:string, currElem:string) => {
-                console.log(prevElem, currElem);
                 return prevElem + " " + currElem.toString().trim();
             });
             
             newInputs = [...newInputs, {prog: {raw: newRaw.toString(), validated: args[i]}, key: takeKey() }];
         }
 
-        let newExample:Example = { inputs: newInputs, want: { raw: "", validated: { yellow: "yellow" }}, key: takeKey() };
+        let newExample:Example = { inputs: newInputs, want: { raw: "", validated: { yellow: "yellow" }}, wantInputRef: React.createRef(), key: takeKey() };
         addExample(newExample, tableIdx);
     }
 

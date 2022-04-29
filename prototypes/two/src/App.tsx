@@ -207,7 +207,7 @@ class App extends React.Component<Props, State> {
         let prefixError = false;
         let globalEnv:Environment = initEnv;
         let tables:Array<Table> = [{
-            examples: [{ inputs: [{ prog: { raw: '', validated: { yellow: 'yellow' }}, key: takeKey() }], want: { raw: '', validated: { yellow: 'yellow' }}, key: takeKey() }],
+            examples: [{ inputs: [{ prog: { raw: '', validated: { yellow: 'yellow' }}, key: takeKey() }], want: { raw: '', validated: { yellow: 'yellow' }}, wantInputRef: React.createRef(), key: takeKey() }],
             formulas: [{ prog: { raw: '', validated: { yellow: 'yellow' }}, outputs: [{ yellow: 'yellow' }], key: takeKey() }],
             params: [{ name: {yellow: 'yellow'}, key: takeKey() }],
             name: {yellow : 'yellow' },
@@ -329,8 +329,10 @@ class App extends React.Component<Props, State> {
                         return bool;
                     })) {
                         if (!isValidatedProgInputNonYellow(example.want.validated)) {
-                            let displayElem = <React.Fragment>({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want</React.Fragment>;
-                            // <button onClick={ [ref of ValidatedArea of Example's Want].current.focus } />
+                            let displayButton = <button onClick={() => (example.wantInputRef.current === null ? (console.log('no ref')) : example.wantInputRef.current.focus())}> Go to Want </button>;
+                            let displayElem:JSX.Element = (<React.Fragment>
+                                                                {displayButton}({table.name}{args.flatMap(a => [' ', ...unparse(a)])}) doesn't have a want
+                                                            </React.Fragment>);
                             let e = new InterpreterError("example doesn't have a want", displayElem);
                             throw e;
                         } else {
@@ -402,11 +404,11 @@ class App extends React.Component<Props, State> {
                 if (allBools(outputs) || (isBooleanFormula(formula) && formula.thenChildren.length !== 0)) {
                     function maybeSpecial(example:Example, output:Output):Example {
                         if ((!isOutputNonYellow(output) && isYellowProgramGray(output)) || ((isOutputNonYellow(output) && isRBOOL(output) && output.value === false))) {
-                            return {inputs: [], want: {raw:'', validated: gray}, key: takeKey()};
+                            return {inputs: [], want: {raw:'', validated: gray}, wantInputRef: React.createRef(), key: takeKey()};
                         }
                             // used to be: typeof outputs.value !== 'boolean'
                         else if (isOutputNonYellow(output) && !isRBOOL(output))
-                            return {inputs: [], want: {raw: '', validated: pink}, key: takeKey()};
+                            return {inputs: [], want: {raw: '', validated: pink}, wantInputRef: React.createRef(), key: takeKey()};
                         else
                             return example;
                     }
@@ -553,7 +555,7 @@ class App extends React.Component<Props, State> {
             let tabInput:Input = {prog: input, key: takeKey()};
             inputs = [...inputs, tabInput];
         });
-        let examples:ExampleArray = [{inputs: inputs, want: checkExpect.want, key: takeKey()}];
+        let examples:ExampleArray = [{inputs: inputs, want: checkExpect.want, wantInputRef: React.createRef(), key: takeKey()}];
 
         let newParams:ParameterArray = [];
         checkExpect.inputs.forEach((input, i) => {
@@ -647,7 +649,7 @@ class App extends React.Component<Props, State> {
             
 
             let newWant:ProgramInput = { raw: checkExpect.want.raw, validated: checkExpect.want.validated};
-            newExample = { inputs: newInputs, want: newWant, key: takeKey() };
+            newExample = { inputs: newInputs, want: newWant, wantInputRef: React.createRef(), key: takeKey() };
             return newExample;
         }
 

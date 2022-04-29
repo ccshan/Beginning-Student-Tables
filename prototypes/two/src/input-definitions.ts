@@ -1,3 +1,4 @@
+import { RefObject } from 'react';
 import type { Yellow, Program } from './global-definitions';
 
 interface Table {
@@ -23,6 +24,7 @@ type ExampleArray = Array<Example>;
 interface Example {
     inputs: InputArray
     want: ProgramInput
+    wantInputRef: RefObject<HTMLTextAreaElement>
     key: number
 }
 

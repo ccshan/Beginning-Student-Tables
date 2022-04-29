@@ -1,3 +1,6 @@
+import { inspect } from 'util';
+var util = require('util');
+
 function sessionURL(sessionID) {
     return `${process.env.PUBLIC_URL}/log/session${sessionID}`;
 }
@@ -17,7 +20,7 @@ class Sendifier {
             const sent = this.item;
             fetch(this.url, {
                 method: 'POST', // or 'PUT'
-                body: JSON.stringify(sent), // data can be `string` or {object}!
+                body: JSON.stringify(util.inspect(sent)), // data can be `string` or {object}!
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' }})
             .then(() => {

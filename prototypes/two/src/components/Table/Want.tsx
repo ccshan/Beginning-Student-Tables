@@ -1,4 +1,4 @@
-import React from "react";
+import React, { RefObject } from "react";
 import { deepEquals, unparse_to_string } from "../../App";
 import { ErrorMessage } from "../ErrorMessage";
 import { Environment, Program } from "../../global-definitions";
@@ -9,6 +9,7 @@ import { ValidatedArea } from "../ValidatedArea";
 
 interface Props {
     want: ProgramInput
+    wantInputRef: RefObject<HTMLTextAreaElement>
     dummy: boolean
     globalEnv : Environment
     disabled: boolean
@@ -114,6 +115,7 @@ class Want extends React.Component<Props, State> {
                                 : undefined}
                             rawText={this.props.want.raw}
                             disabled={this.props.disabled}
+                            inputRef={this.props.wantInputRef}
                             isValid={this.validProg}
                             onValid={(text:(string)) => this.validWantChange(text)}
                             onEmpty={() => this.props.wantChange({raw: '', validated: {yellow: 'yellow'}})}
