@@ -47,6 +47,8 @@ const protoEnv = [
                              value: sqrt}},
     {name: 'quotient', binding: {type: RFUNCT_T,
                                 value: quotient}},
+    {name: 'abs', binding: {type: RFUNCT_T,
+                            value: abs}},
     {name: 'sin', binding: {type: RFUNCT_T,
                             value: sin}},
     {name: 'cos', binding: {type: RFUNCT_T,
@@ -580,6 +582,16 @@ function quotient(args) {
     typeCheck(args[1], [RNUM_T]);
 
     return {value: (args[0].value % args[1].value),
+            type: RNUM_T};
+}
+
+function abs(args) {
+    if (args.length !== 1) {
+        throw new Error('arity mismatch');
+    }
+    typeCheck(args[0], [RNUM_T]);
+
+    return {value: Math.abs(args[0].value),
             type: RNUM_T};
 }
 
